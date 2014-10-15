@@ -8,7 +8,9 @@
 
 #import <UIKit/UIKit.h>
 #import "ViewController.h"
-//#import "ELViewController.h"
+
+@class ELTextField;
+
 
 @interface ELView : UIView
 -(NSMutableAttributedString *)textFieldPlaceHolderWithString:(NSString *)string;

@@ -7,7 +7,7 @@
 //
 
 #import "UITableViewCell+addOns.h"
-
+#import "ELPaymentHeader.h"
 @implementation UITableViewCell (addOns)
 -(void)makeMine{
 //    self.contentView.backgroundColor = [[UIColor grayColor]colorWithAlphaComponent:.1];

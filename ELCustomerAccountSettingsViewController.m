@@ -12,9 +12,7 @@
 #define ROW_OFFSET TOP_SPACING + (ROW_HEIGHT + ROW_SPACING)
 
 
-#import "ELCustomerAccountSettingsViewController.h"
-#import "ELUserManager.h"
-#import "ELChangePasswordViewController.h"
+#import "ELPaymentHeader.h"
 @interface ELCustomerAccountSettingsViewController()
 
  @property (strong, nonatomic) ELTextField *emailTextField, *phoneNumberTextField;

@@ -18,13 +18,7 @@
 #define QUARTER_WIDTH ((self.scrollView.bounds.size.width - LEFT_OFFSET*5)/4)
 
 
-
-#import "ELCustomerAccountViewController.h"
-#import "ELUserManager.h"
-#import "ELLoginViewController.h"
-#import "ELCustomerOrderTableViewController.h"
-#import "ELPaymentMethodsViewController.h"
-#import "ELCustomerAccountSettingsViewController.h"
+#import "ELPaymentHeader.h"
 @interface ELCustomerAccountViewController()
  @property (strong, nonatomic) PFQueryTableViewController *recentOrders;
  @property (strong, nonatomic) UIAlertView *verifyEmailAlertView;

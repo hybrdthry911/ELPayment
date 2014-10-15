@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "ELViewController.h"
 #import "ELCategory.h"
 #import "ELOrder.h"
 @interface ELProductListViewController : ELViewController <UITableViewDataSource, UITableViewDelegate>

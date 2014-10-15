@@ -6,10 +6,7 @@
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
 #import <Parse/Parse.h>
-#import "ELProductListViewController.h"
-#import "ELProduct.h"
-#import "ELProductTableViewCell.h"
-#import "ELProductViewController.h"
+#import "ELPaymentHeader.h"
 @interface ELProductListViewController ()
  @property (strong, nonatomic) UIView *hudProgressView;
  @property (strong, nonatomic) UILabel *loadingLabel;

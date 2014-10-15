@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "ELUserManager.h"
+#import "ELViewController.h"
 @interface ELLoginViewController : ELViewController <UITextFieldDelegate, UIScrollViewDelegate, UIAlertViewDelegate>
 
 @end

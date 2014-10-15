@@ -6,11 +6,8 @@
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
 
-#import "ELPaymentMethodsViewController.h"
-#import "ELUserManager.h"
-#import "ELPaymentMethodEditViewController.h"
-#import "Stripe+ApplePay.h"
-#import "STPTestPaymentAuthorizationViewController.h"
+#import "ELPaymentHeader.h"
+
 @interface ELPaymentMethodsViewController()
  @property (strong, nonatomic) UIRefreshControl *refreshControl;
 @end
@@ -128,7 +125,9 @@
         [self showActivityView];
         if ([[ELUserManager sharedUserManager]passwordSessionActive])
         {
+            
             PKPaymentRequest *paymentRequest = [ELStripe paymentRequestWithMerchantIdentifier:@"merchant.com.fuellogic.enoughlogic"];
+            
             paymentRequest.requiredBillingAddressFields = PKAddressFieldAll;
             paymentRequest.requiredShippingAddressFields = PKAddressFieldAll;
             paymentRequest.currencyCode = @"USD";
@@ -148,7 +147,8 @@
                                      initWithPaymentRequest:paymentRequest];
                 [(PKPaymentAuthorizationViewController *)paymentController setDelegate:self];
 #endif
-                [[ViewController sharedViewController] presentViewController:paymentController animated:YES completion:nil];
+                UIViewController *topController = [ELPaymentMethodsViewController topMostController];
+                [topController presentViewController:paymentController animated:YES completion:nil];
             }
         }
         else
@@ -177,7 +177,9 @@
                                              initWithPaymentRequest:paymentRequest];
                         [(PKPaymentAuthorizationViewController *)paymentController setDelegate:self];
 #endif
-                        [[ViewController sharedViewController] presentViewController:paymentController animated:YES completion:nil];
+                        
+                        UIViewController *topController = [ELPaymentMethodsViewController topMostController];
+                        [topController presentViewController:paymentController animated:YES completion:nil];
                     }
                     
                 }
@@ -210,6 +212,15 @@
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
++ (UIViewController*) topMostController
+{
+    UIViewController *topController = [UIApplication sharedApplication].keyWindow.rootViewController;
+    
+    while (topController.presentedViewController) {
+        topController = topController.presentedViewController;
+    }
+    return topController;
+}
 
 // ViewController.m
 

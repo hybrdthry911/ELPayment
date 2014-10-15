@@ -5,15 +5,10 @@
 //  Created by Mike on 5/10/14.
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
-#import "ELShipment.h"
-#import "ELOrder.h"
-#import "ELCustomer.h"
-#import "ELLineItem.h"
+#include "ELPaymentHeader.h"
+
 #import "Defines.h"
-#import "ELError.h"
-#import "XMLReader.h"
-#import "ELProductAlertView.h"
-#import "ELUserManager.h"
+
 #define USPS_ACCOUNT_ID @"305ENOUG1715"
 #define USPS_ORIGIN_ZIP @"01013"
 #define USPS_BASE_URL @"http://production.shippingapis.com/ShippingAPI.dll"

@@ -20,5 +20,5 @@
 -(void)showActivityView;
 -(void)hideActivityView;
 
-
++ (UIViewController*) topMostController;
 @end

@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
 
-#import "ELProductTableViewCell.h"
+#import "ELPaymentHeader.h"
 
 @implementation ELProductTableViewCell
  @synthesize product = _product;

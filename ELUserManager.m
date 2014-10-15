@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
 #import "ViewController.h"
-#import "ELUserManager.h"
+#import "ELPaymentHeader.h"
 @interface ELUserManager ()
  @property (strong, nonatomic) ELVerifyPasswordView *verifyPasswordAlertView;
  @property (strong, nonatomic) NSDate *passwordSessionStartDate;
@@ -125,7 +125,7 @@ static ELUserManager *sharedUserManager = nil;
     
     if (password.length)
     {
-        ELViewController *vc = [ViewController sharedViewController];
+        ELViewController *vc = (ELViewController *)[ELUserManager topMostController];
         [vc showActivityView];
         
         [self verifyPassword:password completion:^(BOOL verified, NSError *error) {
@@ -143,7 +143,7 @@ static ELUserManager *sharedUserManager = nil;
 }
 -(void)verifyPasswordViewForgotPassword:(ELVerifyPasswordView *)view
 {
-    ELViewController *vc = [ViewController sharedViewController];
+    ELViewController *vc = (ELViewController *)[ELUserManager topMostController];
     [vc showActivityView];
     
     [PFUser requestPasswordResetForEmailInBackground:self.currentUser.email block:^(BOOL succeeded, NSError *error) {
@@ -236,5 +236,4 @@ static ELUserManager *sharedUserManager = nil;
     }];
     
 }
-
 @end

@@ -22,7 +22,7 @@
 
 - (PFRelation *)children{
     if(_children == nil) {
-        _children = [self relationforKey:@"children"];
+        _children = [self relationForKey:@"children"];
     }
     return _children;
 }

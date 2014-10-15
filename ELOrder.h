@@ -10,6 +10,9 @@
 #import "Stripe.h"
 #import <Parse/Parse.h>
 #import "ELLineItem.h"
+
+@class ELCard;
+@class ELCharge;
 @class ELCustomer;
 @class ELLineItem;
 @class Product;

@@ -7,7 +7,7 @@
 //
 
 #import "ELAmountTableViewCell.h"
-
+#import "ELPaymentHeader.h"
 @implementation ELAmountTableViewCell
 
 -(instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier

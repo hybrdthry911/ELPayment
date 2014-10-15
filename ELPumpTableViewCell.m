@@ -6,8 +6,7 @@
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
 
-#import "ELPumpTableViewCell.h"
-#import "Defines.h"
+#import "ELPaymentHeader.h"
 
 @interface ELPumpTableViewCell()
 

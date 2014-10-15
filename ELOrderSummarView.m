@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
 
-#import "ELOrderSummarView.h"
+#import "ELPaymentHeader.h"
 @interface ELOrderSummarView()
  @property (strong, nonatomic) UILabel  *subTotalTitleLabel, *shippingTitleLabel, *totalTitleLabel, *taxTitleLabel;
  @property (strong, nonatomic) UILabel  *subTotalLabel, *shippingLabel, *totalLabel, *taxLabel;

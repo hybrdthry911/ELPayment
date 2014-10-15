@@ -8,6 +8,7 @@
 
 #import "ELViewController.h"
 #import "ELPTKView.h"
+@class ELCard;
 @interface ELPaymentMethodEditViewController : ELViewController <UIPickerViewDataSource, UIPickerViewDelegate, UITextFieldDelegate, PTKTextFieldDelegate, PTKViewDelegate, ELPTKViewDelegate, UIAlertViewDelegate>
 
  @property (strong, nonatomic) ELCard *card;

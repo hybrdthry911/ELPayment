@@ -9,5 +9,7 @@
 #import "ELViewController.h"
 #import "ELPumpTableViewCell.h"
 #import "ELTableViewController.h"
+#import <PassKit/PassKit.h>
+
 @interface ELPaymentMethodsViewController : ELTableViewController <PKPaymentAuthorizationViewControllerDelegate>
 @end

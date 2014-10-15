@@ -50,7 +50,7 @@
 
 - (PFRelation *)categories{
     if(_categories == nil) {
-        _categories = [self relationforKey:@"categories"];
+        _categories = [self relationForKey:@"categories"];
     }
     return _categories;
 }

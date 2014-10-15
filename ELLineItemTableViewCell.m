@@ -13,13 +13,7 @@
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
 
-#import "ELLineItemTableViewCell.h"
-#import "Defines.h"
-
-#import "ELLineItem.h"
-#import "Defines.h"
-#import "UIView+UIView_Utilities.h"
-
+#import "ELPaymentHeader.h"
 
 
 

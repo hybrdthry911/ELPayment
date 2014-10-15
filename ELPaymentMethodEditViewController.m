@@ -15,9 +15,7 @@
 #define ABBREVIATED_STATE_ARRAY [NSArray arrayWithObjects:@"AL", @"AK", @"AZ", @"AR", @"CA", @"CO", @"CT", @"DE", @"FL", @"GA", @"HI", @"ID", @"IL", @"IN", @"IA", @"KS", @"KY", @"LA", @"ME", @"MD", @"MA", @"MI", @"MN", @"MS", @"MO", @"MT", @"NE", @"NV", @"NH", @"NJ", @"NM", @"NY", @"NC", @"ND", @"OH", @"OK", @"OR", @"PA", @"RI", @"SC", @"SD", @"TN", @"TX", @"UT", @"VT", @"VA", @"WA", @"WV", @"WI", @"WY", nil];
 
 
-#import "ELPaymentMethodEditViewController.h"
-#import "ELUserManager.h"
-#import "Stripe.h"
+#import "ELPaymentHeader.h"
 
 @interface ELPaymentMethodEditViewController()
  @property (strong, nonatomic) NSString *stateString;

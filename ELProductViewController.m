@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
 
-#import "ELProductViewController.h"
+#import "ELPaymentHeader.h"
 #import <Parse/Parse.h>
 #define IMAGE_HEIGHT 200
 #define CART_SIZE 75

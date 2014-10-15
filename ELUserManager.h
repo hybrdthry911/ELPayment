@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 #import "ELVerifyPasswordView.h"
+#import <Parse/Parse.h>
+@class ELCustomer;
 typedef void (^ELVerifyPasswordHandler)(BOOL verified, NSError* error);
 
 @interface ELUserManager : NSObject <ELVerifyPasswordViewDelegate>

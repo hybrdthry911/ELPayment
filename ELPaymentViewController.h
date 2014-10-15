@@ -10,9 +10,13 @@
 #import "PTKView.h"
 #import "PTKTextField.h"
 #import "ELPTKView.h"
+#import "ELPickerView.h"
+#import <Parse/Parse.h>
+@class ELCustomer;
 @class ELOrder;
 @class ELCustomer;
 @class STPCard;
+@class STPToken;
 @interface ELPaymentViewController : ELViewController <PTKViewDelegate, UITextFieldDelegate, UIPickerViewDelegate, UIScrollViewDelegate, ELPTKViewDelegate, UIAlertViewDelegate, PFLogInViewControllerDelegate, PFSignUpViewControllerDelegate, UIAlertViewDelegate, ELPickerViewDelegate, UIPickerViewDataSource>
  @property (strong, nonatomic) ELCustomer *customer;
  @property (strong, nonatomic) STPToken *token;

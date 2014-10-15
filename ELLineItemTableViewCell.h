@@ -5,8 +5,13 @@
 //  Created by Mike on 6/10/14.
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
+
+#import <UIKit/UIKit.h>
+
 @class ELStepper;
 @class ELLineItem;
+
+
 @interface ELLineItemTableViewCell : UITableViewCell <UIPickerViewDataSource, UIPickerViewDelegate>
  @property (strong, nonatomic) UILabel *unitPriceLabel, *subTotalLabel;
  @property (strong, nonatomic) ELLineItem *lineItem;

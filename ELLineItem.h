@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "Product.h"
 #import <Parse/Parse.h>
 #import "ELProduct.h"
 typedef void (^elPFObjectSaveCompletionHandler)(PFObject *object, NSError* error);

@@ -7,7 +7,7 @@
 //
 #define ROW_HEIGHT 40
 
-#import "ELTableViewController.h"
+#import "ELPaymentHeader.h"
 
 @implementation ELTableViewController
 @synthesize activityView = _activityView;
@@ -105,5 +105,15 @@
         _activityLabel.text = @"Processing...";
     }
     return _activityLabel;;
+}
+
++ (UIViewController*) topMostController
+{
+    UIViewController *topController = [UIApplication sharedApplication].keyWindow.rootViewController;
+    
+    while (topController.presentedViewController) {
+        topController = topController.presentedViewController;
+    }
+    return topController;
 }
 @end
