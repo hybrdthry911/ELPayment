@@ -19,7 +19,7 @@
 
 
 
-#import "ELCompleteSummaryView.h"
+#import "ELPaymentHeader.h"
 @interface ELCompleteSummaryView()
  @property (strong, nonatomic) UIScrollView *scrollView;
  @property (strong, nonatomic) UILabel *quantityLabel, *nameLabel, *priceLabel;

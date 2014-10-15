@@ -6,13 +6,7 @@
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
 
-#import "ELExistingOrderViewController.h"
-#import "ELExistingLineItemTableViewCell.h"
-#import "ELPumpTableViewCell.h"
-#import "ELProductViewController.h"
-#import "ELTrackingViewController.h"
-#import "ELAmountTableViewCell.h"
-
+#import "ELPaymentHeader.h"
 typedef enum{
 elExistingOrderIndexDate,elExistingOrderIndexStatus,elExistingOrderIndexLineItems,elExistingOrderIndexSubTotal,elExistingOrderIndexShipping,elExistingOrderIndexTax,elExistingOrderIndexTotal,elExistingOrderIndexCC,elExistingOrderIndexTracking,elExistingOrderIndexShippingInformation,elExistingOrderIndexDefault
 }elExistingOrderIndex;

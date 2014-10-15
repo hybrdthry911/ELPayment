@@ -7,7 +7,8 @@
 //
 
 #import <Parse/Parse.h>
-
+@class ELCard;
+@class ELCustomer;
 @interface ELExistingOrder : PFObject <PFSubclassing>
 @property (strong, nonatomic) NSString *email, *stripeChargeIdentifier, *billingInformation, *status, *stripeCustomerId, *shippingCarrier, *trackingNumber, *notes;
  @property (strong, nonatomic) NSNumber *shipping, *orderNumber, *subTotal, *total, *amountRefunded, *discount, *tax;

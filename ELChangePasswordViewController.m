@@ -11,8 +11,7 @@
 #define ROW_SPACING 5
 #define ROW_OFFSET TOP_SPACING + (ROW_HEIGHT + ROW_SPACING)
 
-#import "ELChangePasswordViewController.h"
-#import "ELUserManager.h"
+#import "ELPaymentHeader.h"
 @interface ELChangePasswordViewController()
  @property (strong, nonatomic) ELTextField *oldPasswordTextField, *password1TextField, *password2TextField;
  @property (strong, nonatomic) UIBarButtonItem *saveButton;

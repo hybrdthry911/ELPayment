@@ -5,8 +5,7 @@
 //  Created by Mike on 10/5/14.
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
-
-#import "ELExistingLineItemTableViewCell.h"
+#import "ELPaymentHeader.h"
 
 @interface ELExistingLineItemTableViewCell()
  @property (strong, nonatomic) UILabel *unitPriceLabel, *nameLabel, *quantityLabel;
