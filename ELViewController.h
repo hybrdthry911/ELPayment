@@ -7,6 +7,16 @@
 //
 
 #import <UIKit/UIKit.h>
+typedef enum
+{
+    ELViewXOffsetNone, ELViewXOffsetOneHalf, ELViewXOffsetOneQuarter, ELViewXOffsetOneThird, ELViewXOffsetTwoThird, ELViewXOffsetThreeQuarter, ELViewXOffsetOffScreenLeft, ELViewXOffsetOffScreenRight, ELViewXOffsetOneSixth, ELViewXOffsetFiveSixth
+}ELViewXOffset;
+
+typedef enum
+{
+    ELViewWidthFull, ELViewWidthHalf, ELViewWidthQuarter, ELViewWidthThird
+}ELViewWidth;
+
 
 @class ELTextField;
 @interface ELViewController : UIViewController
