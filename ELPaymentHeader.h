@@ -7,12 +7,19 @@
 //
 #ifndef OrderManager_ELPaymentHeader_h
 #define OrderManager_ELPaymentHeader_h
+<<<<<<< HEAD
 #import <UIKit/UIKit.h>
 #import "ELStripeHeader.h"
 #import "Stripe+ApplePay.h"
 #import "STPTestPaymentAuthorizationViewController.h"
 #import "ELView.h"
 #import "ELViewController.h"
+=======
+#import "ELView.h"
+#import "ELViewController.h"
+
+#import "ELStripeHeader.h"
+>>>>>>> FETCH_HEAD
 #import "ELAmountTableViewCell.h"
 #import "ELCategory.h"
 #import "ELChangePasswordViewController.h"
@@ -53,6 +60,7 @@
 #import "PTKTextField.h"
 
 
+<<<<<<< HEAD
 #define MY_FONT_1 @"HelveticaNeue-Thin"
 #define MY_FONT_2 @"Helvetica-Oblique"
 #define MY_FONT_3 @"HelveticaNeue-Bold"
@@ -71,4 +79,6 @@
 
 
 
+=======
+>>>>>>> FETCH_HEAD
 #endif
