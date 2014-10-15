@@ -7,19 +7,14 @@
 //
 #ifndef OrderManager_ELPaymentHeader_h
 #define OrderManager_ELPaymentHeader_h
-<<<<<<< HEAD
 #import <UIKit/UIKit.h>
 #import "ELStripeHeader.h"
 #import "Stripe+ApplePay.h"
 #import "STPTestPaymentAuthorizationViewController.h"
 #import "ELView.h"
 #import "ELViewController.h"
-=======
-#import "ELView.h"
-#import "ELViewController.h"
 
 #import "ELStripeHeader.h"
->>>>>>> FETCH_HEAD
 #import "ELAmountTableViewCell.h"
 #import "ELCategory.h"
 #import "ELChangePasswordViewController.h"
@@ -59,8 +54,6 @@
 #import "UIView+UIView_Utilities.h"
 #import "PTKTextField.h"
 
-
-<<<<<<< HEAD
 #define MY_FONT_1 @"HelveticaNeue-Thin"
 #define MY_FONT_2 @"Helvetica-Oblique"
 #define MY_FONT_3 @"HelveticaNeue-Bold"
@@ -77,8 +70,4 @@
 #define IS_IPHONE (UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPhone)
 #define IS_WIDESCREEN ( fabs( ( double )[ [ UIScreen mainScreen ] bounds ].size.height - ( double )568 ) < DBL_EPSILON )
 
-
-
-=======
->>>>>>> FETCH_HEAD
 #endif
