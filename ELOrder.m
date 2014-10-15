@@ -6,8 +6,9 @@
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
 #include "ELPaymentHeader.h"
-
-#import "Defines.h"
+#import "Postmaster.h"
+#import "Shipment.h"
+#import "RateResult.h"
 
 #define USPS_ACCOUNT_ID @"305ENOUG1715"
 #define USPS_ORIGIN_ZIP @"01013"

@@ -13,7 +13,7 @@
 #import "STPTestPaymentAuthorizationViewController.h"
 #import "ELView.h"
 #import "ELViewController.h"
-
+#import "ELShipment.h"
 #import "ELStripeHeader.h"
 #import "ELAmountTableViewCell.h"
 #import "ELCategory.h"

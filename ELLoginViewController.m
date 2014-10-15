@@ -17,8 +17,7 @@
 #define QUARTER_WIDTH ((self.scrollView.bounds.size.width - LEFT_OFFSET*5)/4)
 
 
-#import "ELLoginViewController.h"
-#import "ELPaymentViewController.h"
+#import "ELPaymentHeader.h"
 @interface ELLoginViewController ()
  @property (strong, nonatomic) UILabel *titleLabel;
  @property (strong, nonatomic) PFUser *currentUser;

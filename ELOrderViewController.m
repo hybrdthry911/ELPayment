@@ -6,9 +6,7 @@
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
 
-#import "ELOrderViewController.h"
-#import "Defines.h"
-#import "ELLoginViewController.h"
+#import "ELPaymentHeader.h"
 @interface ELOrderViewController ()
  @property (strong, nonatomic) UITableView *tableView;
 @property NSInteger currentSelectedTableViewCellRow;
