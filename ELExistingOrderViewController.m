@@ -145,9 +145,13 @@
     switch (indexPath.section) {
         case elExistingOrderIndexLineItems:
         {
-            return [[self.lineItems[indexPath.row] productName]
-                    sizeWithFont:[UIFont fontWithName:MY_FONT_1 size:15]
-                    constrainedToSize:CGSizeMake(self.tableView.bounds.size.width/2-10, 500)].height+10;
+            CGFloat height = [[self.lineItems[indexPath.row] productName]
+                              sizeWithFont:[UIFont fontWithName:MY_FONT_1 size:15]
+                              constrainedToSize:CGSizeMake(self.tableView.bounds.size.width/2-10, 500)].height+10;
+            CGFloat additionalHeight = [[self.lineItems[indexPath.row] additionalInformation]
+                                        sizeWithFont:[UIFont fontWithName:MY_FONT_1 size:15]
+                                        constrainedToSize:CGSizeMake(self.tableView.bounds.size.width/2-10, 500)].height+10;
+            return [self.lineItems[indexPath.row] additionalInformation]? height+additionalHeight:height;
         }
             break;
         case elExistingOrderIndexShippingInformation:

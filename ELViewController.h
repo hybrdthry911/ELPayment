@@ -28,6 +28,7 @@ typedef enum
  @property (strong, nonatomic) UIScrollView *scrollViewToKeyBoardAdjust;
 -(void)textFieldDidBeginEditing:(UITextField *)textField;
 -(void)textFieldDidEndEditing:(UITextField *)textField;
+-(void)textFieldDidChange:(ELTextField *)textField;
 //hides keyboard and clears currenttextfield
 -(IBAction)handleViewTap:(id)sender;
 -(NSMutableAttributedString *)textFieldPlaceHolderWithString:(NSString *)string;

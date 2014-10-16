@@ -66,7 +66,7 @@
         cell.textLabel.text = [NSString stringWithFormat:@"Order#:%@  (%@)",order[@"orderNumber"], [dateFormat stringFromDate:order.createdAt]];
     }
     else if(self.fetchComplete && !self.objects.count) cell.textLabel.text = @"No Orders Found";
-    else cell.textLabel.text = @"Loading";
+    else cell.textLabel.text = @"";
     return cell;
 }
 
