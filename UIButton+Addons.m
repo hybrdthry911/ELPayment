@@ -16,7 +16,7 @@
 #define QUARTER_WIDTH ((self.scrollView.bounds.size.width - LEFT_OFFSET*2.5)/4)
 
 
-#import "UIButton+Addons.h"
+#import "ELPaymentHeader.h"
 #import <objc/runtime.h>
 
 @implementation UIButton (Addons)

@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
 
-#import "UILabel+addOns.h"
+#import "ELPaymentHeader.h"
 
 @implementation UILabel (addOns)
 -(void)makeMine{

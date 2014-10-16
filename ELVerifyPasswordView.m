@@ -6,7 +6,7 @@
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
 
-#import "ELVerifyPasswordView.h"
+#import "ELPaymentHeader.h"
 
 @interface ELVerifyPasswordView()
  @property (strong, nonatomic) ELView *alertHolderView;
