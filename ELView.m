@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
 
-#import "ELView.h"
 
+#import "ELPaymentHeader.h"
 @implementation ELView
 -(NSMutableAttributedString *)textFieldPlaceHolderWithString:(NSString *)string{
     
