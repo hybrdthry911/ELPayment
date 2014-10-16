@@ -36,6 +36,7 @@
 {
     [super viewDidLoad];
     self.currentUser = [[ELUserManager sharedUserManager]currentUser];
+    
     self.signUpMode = NO;
     self.scrollView = [[UIScrollView alloc]init];
     self.scrollView.delegate = self;
@@ -197,16 +198,24 @@
 -(void)submitNewUser
 {
     
-    if (self.usernameTextField.text.length>=self.usernameTextField.requiredLength) {
-        self.currentUser.username = [self.usernameTextField.text lowercaseString];
-        if (self.passwordTextfield.text.length>=self.passwordTextfield.requiredLength) {
-            self.currentUser.password = self.usernameTextField.text;
-            if ([self validateEmail:[self.emailTextField.text lowercaseString]]) {
-                self.currentUser.email = [self.emailTextField.text lowercaseString];
-                @try {
+    if (self.usernameTextField.text.length>=self.usernameTextField.requiredLength)
+    {
+        if (self.passwordTextfield.text.length>=self.passwordTextfield.requiredLength)
+        {
+            if ([self validateEmail:[self.emailTextField.text lowercaseString]])
+            {
+                @try
+                {
                     [self showActivityView];
-                    [[[ELUserManager sharedUserManager]currentUser] signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error)
+                    
+                    PFUser *user = self.currentUser;
+                    if (!user) user = [PFUser user];
+                    user.username = [self.usernameTextField.text lowercaseString];
+                    user.password = self.usernameTextField.text;
+                    user.email = [self.emailTextField.text lowercaseString];
+                    [user signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error)
                     {
+                        
                         if (error) {
                             [self.currentUser fetch];
                             UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:nil delegate:nil cancelButtonTitle:@"Close" otherButtonTitles:nil];
@@ -244,8 +253,8 @@
                     NSLog(@"Caught Exception:%@",exception);
                     [myAlert show];
                 }
-                @finally {
-                    
+                @finally
+                {
                 }
 
                 

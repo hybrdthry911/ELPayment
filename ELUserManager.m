@@ -25,6 +25,11 @@ static ELUserManager *sharedUserManager = nil;
 {
     self = [super init];
     if (self) {
+        PFACL *defaultACL = [PFACL ACL];
+        [defaultACL setReadAccess:YES forRoleWithName:@"Admin"];
+        [defaultACL setWriteAccess:YES forRoleWithName:@"Admin"];
+        [PFACL setDefaultACL:defaultACL withAccessForCurrentUser:YES];
+        
         [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(userLoggedIn:) name:elNotificationLoginSucceeded object:nil];
         [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(userLoggedOut:) name:elNotificationLogoutSucceeded object:nil];
         [self setSingleton];
@@ -211,10 +216,6 @@ static ELUserManager *sharedUserManager = nil;
 -(void)setCurrentUser:(PFUser *)currentUser
 {
     _currentUser = currentUser;
-    PFACL *defaultACL = [PFACL ACL];
-    [defaultACL setReadAccess:YES forRoleWithName:@"Admin"];
-    [defaultACL setWriteAccess:YES forRoleWithName:@"Admin"];
-    [PFACL setDefaultACL:defaultACL withAccessForCurrentUser:YES];
     [self checkForSessionTimer];
 }
 -(void)userLoggedOut:(NSNotification *)notification
