@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
 #import "ELPaymentHeader.h"
+
 @interface ELUserManager ()
  @property (strong, nonatomic) ELVerifyPasswordView *verifyPasswordAlertView;
  @property (strong, nonatomic) NSDate *passwordSessionStartDate;
@@ -58,6 +59,7 @@ static ELUserManager *sharedUserManager = nil;
 }
 -(void)userLoggedIn:(NSNotification *)notification
 {
+    self.currentUser = [PFUser currentUser];
     if ([PFUser currentUser])
     {
         [[PFUser currentUser] fetchInBackgroundWithBlock:^(PFObject *object, NSError *error)
@@ -227,6 +229,7 @@ static ELUserManager *sharedUserManager = nil;
 -(void)logout
 {
     [PFUser logOut];
+    self.currentUser = nil;
     [[NSNotificationCenter defaultCenter] postNotificationName:elNotificationLogoutSucceeded object:nil];
     [PFAnonymousUtils logInWithBlock:^(PFUser *user, NSError *error) {
         if (!error) {
