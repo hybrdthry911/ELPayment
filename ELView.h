@@ -7,7 +7,6 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "ViewController.h"
 
 @class ELTextField;
 
@@ -15,7 +14,7 @@
 @interface ELView : UIView
 -(NSMutableAttributedString *)textFieldPlaceHolderWithString:(NSString *)string;
 -(UIInterfaceOrientation)orientation;
-+ (ViewController *)topMostController;
++ (UIViewController *)topMostController;
 -(ELTextField *)addNewTextField;
 -(IBAction)textFieldDidChange:(ELTextField *)sender;
 @end

@@ -1275,18 +1275,6 @@ typedef enum{
     }
     // [self.addressScrollView setNeedsDisplay];
 }
-+ (ViewController*) topMostController{
-    ViewController *topController = (ViewController *)[UIApplication sharedApplication].keyWindow.rootViewController;
-    
-    while (topController.presentedViewController) {
-        topController = (ViewController *)topController.presentedViewController;
-    }
-    return topController;
-}
--(void)autoCloseAlertView:(UIAlertView*)alert{
-    [alert dismissWithClickedButtonIndex:-1 animated:YES];
-}
-
 #pragma mark NavigationMethods
 -(BOOL)navigationShouldPopOnBackButton{
     BOOL shouldPop = (self.paymentStage == elPaymentStageAddress);

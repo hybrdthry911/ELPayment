@@ -16,12 +16,12 @@
     [returnString addAttribute:NSFontAttributeName value:[UIFont fontWithName:MY_FONT_1 size:17] range:NSMakeRange(0, returnString.length)];
     return returnString;
 }
-+ (ViewController*) topMostController
++ (UIViewController*) topMostController
 {
-    ViewController *topController = (ViewController *)[UIApplication sharedApplication].keyWindow.rootViewController;
+    UIViewController *topController = [UIApplication sharedApplication].keyWindow.rootViewController;
     
     while (topController.presentedViewController) {
-        topController = (ViewController *)topController.presentedViewController;
+        topController = topController.presentedViewController;
     }
     return topController;
 }

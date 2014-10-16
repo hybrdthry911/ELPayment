@@ -5,7 +5,6 @@
 //  Created by Mike on 9/30/14.
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
-#import "ViewController.h"
 #import "ELPaymentHeader.h"
 @interface ELUserManager ()
  @property (strong, nonatomic) ELVerifyPasswordView *verifyPasswordAlertView;
@@ -166,7 +165,7 @@ static ELUserManager *sharedUserManager = nil;
 }
 + (UIViewController*) topMostController
 {
-    UIViewController *topController = (ViewController *)[UIApplication sharedApplication].keyWindow.rootViewController;
+    UIViewController *topController = [UIApplication sharedApplication].keyWindow.rootViewController;
     
     while (topController.presentedViewController) {
         topController = topController.presentedViewController;
