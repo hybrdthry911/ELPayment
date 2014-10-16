@@ -13,9 +13,17 @@
 {
     [super viewDidLoad];
     UIWebView *webview = [[UIWebView alloc]initWithFrame:self.view.bounds];
+    webview.delegate = self;
     NSURLRequest *requestObj = [NSURLRequest requestWithURL:self.url];
     [webview loadRequest:requestObj];
     [self.view addSubview:webview];
+    [self showActivityView];
 }
+-(void)webViewDidStartLoad:(UIWebView *)webView{
 
+}
+-(void)webViewDidFinishLoad:(UIWebView *)webView
+{
+        [self hideActivityView];
+}
 @end

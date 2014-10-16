@@ -8,6 +8,6 @@
 
 #import "ELViewController.h"
 
-@interface ELTrackingViewController : ELViewController
+@interface ELTrackingViewController : ELViewController <UIWebViewDelegate>
  @property (strong, nonatomic) NSURL *url;
 @end
