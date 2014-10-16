@@ -20,6 +20,7 @@
 {
     [super viewDidLoad];
     self.view.backgroundColor = [[UIColor whiteColor]colorWithAlphaComponent:.90];
+    self.tableView.backgroundColor = [[UIColor whiteColor]colorWithAlphaComponent:.90];
     
     // Do any additional setup after loading the view.
 }

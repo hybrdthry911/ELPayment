@@ -7,9 +7,7 @@
 //
 
 #import "ELPaymentHeader.h"
-typedef enum{
-elExistingOrderIndexDate,elExistingOrderIndexStatus,elExistingOrderIndexLineItems,elExistingOrderIndexSubTotal,elExistingOrderIndexShipping,elExistingOrderIndexTax,elExistingOrderIndexTotal,elExistingOrderIndexCC,elExistingOrderIndexTracking,elExistingOrderIndexShippingInformation,elExistingOrderIndexDefault
-}elExistingOrderIndex;
+
 @interface ELExistingOrderViewController()
 @property (strong, nonatomic) NSArray *lineItems;
 @end

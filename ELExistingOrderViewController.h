@@ -8,6 +8,12 @@
 
 #import "ELTableViewController.h"
 #import "ELExistingOrder.h"
+
+typedef enum{
+    elExistingOrderIndexDate,elExistingOrderIndexStatus,elExistingOrderIndexLineItems,elExistingOrderIndexSubTotal,elExistingOrderIndexShipping,elExistingOrderIndexTax,elExistingOrderIndexTotal,elExistingOrderIndexCC,elExistingOrderIndexTracking,elExistingOrderIndexShippingInformation,elExistingOrderIndexDefault
+}elExistingOrderIndex;
+
+
 @interface ELExistingOrderViewController : ELTableViewController
  @property (strong, nonatomic) ELExistingOrder *order;
 @end
