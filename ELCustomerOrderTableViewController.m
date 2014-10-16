@@ -85,7 +85,6 @@
 
 -(PFQuery *)queryForTable
 {
-    
     PFQuery *query = [PFQuery queryWithClassName:@"Order"];
     [query whereKey:@"customer" equalTo:[[ELUserManager sharedUserManager]currentUser]];
     [query orderByDescending:@"orderNumber"];
