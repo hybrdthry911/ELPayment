@@ -425,8 +425,7 @@
                                               self.customer.descriptor];
         
         
-        PFRelation *customer = [orderObject relationForKey:@"customer"];
-        [customer addObject:[[ELUserManager sharedUserManager]currentUser]];
+        orderObject[@"customer"] = [[ELUserManager sharedUserManager]currentUser];
         if (self.subTotal) orderObject[@"subTotal"] = self.subTotal;
         if (self.tax)        orderObject[@"tax"] = self.tax;
         if (self.shipping)        orderObject[@"shipping"] = self.shipping;

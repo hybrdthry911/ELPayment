@@ -26,10 +26,8 @@ static ELUserManager *sharedUserManager = nil;
 {
     self = [super init];
     if (self) {
-        PFACL *defaultACL = [PFACL ACL];
-        [defaultACL setReadAccess:YES forRoleWithName:@"Admin"];
-        [defaultACL setWriteAccess:YES forRoleWithName:@"Admin"];
-        [PFACL setDefaultACL:defaultACL withAccessForCurrentUser:YES];
+        
+        
         
         [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(userLoggedIn:) name:elNotificationLoginSucceeded object:nil];
         [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(userLoggedOut:) name:elNotificationLogoutSucceeded object:nil];
@@ -231,12 +229,19 @@ static ELUserManager *sharedUserManager = nil;
     [PFUser logOut];
     self.currentUser = nil;
     [[NSNotificationCenter defaultCenter] postNotificationName:elNotificationLogoutSucceeded object:nil];
-    [PFAnonymousUtils logInWithBlock:^(PFUser *user, NSError *error) {
-        if (!error) {
-            self.currentUser = user;
-            [[NSNotificationCenter defaultCenter]postNotificationName:elNotificationAnonLoginSucceeded object:user];
-        }
-    }];
+    self.currentUser = [PFUser currentUser];
+    if (self.currentUser){
+        [[NSNotificationCenter defaultCenter]postNotificationName:elNotificationAnonLoginSucceeded object:self.currentUser];
+        NSLog(@"currentUser:%@",self.currentUser);
+    }
+//    
+//    [PFAnonymousUtils logInWithBlock:^(PFUser *user, NSError *error) {
+//        
+//        if (!error) {
+//            self.currentUser = user;
+//            [[NSNotificationCenter defaultCenter]postNotificationName:elNotificationAnonLoginSucceeded object:user];
+//        }
+//    }];
     
 }
 @end
