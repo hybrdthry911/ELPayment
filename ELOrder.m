@@ -441,7 +441,6 @@
         }
         [ELExistingOrder nextOrderNumber:^(int number, NSError *error) {
             orderObject.orderNumber = [NSNumber numberWithInt:number];
-            [orderObject incrementKey:@"orderNumber"];
             [orderObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
                 
                 if (error) {
