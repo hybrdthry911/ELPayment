@@ -18,7 +18,7 @@
  @property (strong, nonatomic) PFUser *customer;
  @property (readonly, nonatomic) PFRelation *lineItems;
 +(void)nextOrderNumber:(PFIntegerResultBlock)handler;
--(void)emailCustomerTrackingFromOrder;
--(void)emailCustomerOrderConfirmation;
--(void)emailBusinessOrderConfirmation;
+-(void)emailCustomerTrackingFromOrder:(PFBooleanResultBlock)handler;
+-(void)emailCustomerOrderConfirmation:(PFBooleanResultBlock)handler;
+-(void)emailBusinessOrderConfirmation:(PFBooleanResultBlock)handler;
 @end

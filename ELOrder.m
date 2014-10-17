@@ -387,8 +387,8 @@
                                 }
                             }];
                         }
-                        [self.pfObjectRepresentation emailCustomerOrderConfirmation];
-                        [self.pfObjectRepresentation emailBusinessOrderConfirmation];
+                        [self.pfObjectRepresentation emailCustomerOrderConfirmation:nil];
+                        [self.pfObjectRepresentation emailBusinessOrderConfirmation:nil];
                         handler(self.orderStatus, error);
                     }
                 }];

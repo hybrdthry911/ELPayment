@@ -25,7 +25,7 @@
 {
     return @"Order";
 }
--(void)emailCustomerOrderConfirmation
+-(void)emailCustomerOrderConfirmation:(PFBooleanResultBlock)handler
 {
     [PFCloud callFunctionInBackground:@"emailCustomerInvoiceFromOrder" withParameters:@{@"objectId":self.objectId} block:^(id object, NSError *error) {
         if (error) {
@@ -33,7 +33,7 @@
         }
     }];
 }
--(void)emailBusinessOrderConfirmation
+-(void)emailBusinessOrderConfirmation:(PFBooleanResultBlock)handler
 {
     [PFCloud callFunctionInBackground:@"emailBusinessInvoiceFromOrder" withParameters:@{@"objectId":self.objectId} block:^(id object, NSError *error) {
         if (error) {
@@ -41,7 +41,7 @@
         }
     }];
 }
--(void)emailCustomerTrackingFromOrder
+-(void)emailCustomerTrackingFromOrder:(PFBooleanResultBlock)handler
 {
     [PFCloud callFunctionInBackground:@"emailCustomerTrackingFromOrder" withParameters:@{@"objectId":self.objectId} block:^(id object, NSError *error) {
         if (error) {
