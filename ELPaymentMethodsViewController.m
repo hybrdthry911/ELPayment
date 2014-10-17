@@ -126,7 +126,7 @@
         if ([[ELUserManager sharedUserManager]passwordSessionActive])
         {
             
-            PKPaymentRequest *paymentRequest = [ELStripe paymentRequestWithMerchantIdentifier:@"merchant.com.fuellogic.enoughlogic"];
+            PKPaymentRequest *paymentRequest = [ELStripe paymentRequestWithMerchantIdentifier:@"merchant.com.enoughlogic.fuellogic"];
             
             paymentRequest.requiredBillingAddressFields = PKAddressFieldAll;
             paymentRequest.requiredShippingAddressFields = PKAddressFieldAll;
@@ -157,7 +157,7 @@
                 UIViewController *paymentController;
                 if (verified)
                 {
-                    PKPaymentRequest *paymentRequest =[ELStripe paymentRequestWithMerchantIdentifier:@"merchant.com.fuellogic.enoughlogic"];
+                    PKPaymentRequest *paymentRequest =[ELStripe paymentRequestWithMerchantIdentifier:@"merchant.com.enoughlogic.fuellogic"];
                     paymentRequest.requiredBillingAddressFields = PKAddressFieldAll;
                     paymentRequest.requiredShippingAddressFields = PKAddressFieldAll;
                     paymentRequest.currencyCode = @"USD";

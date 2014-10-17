@@ -18,4 +18,7 @@
  @property (strong, nonatomic) PFUser *customer;
  @property (readonly, nonatomic) PFRelation *lineItems;
 
+
+-(void)emailCustomerOrderConfirmation;
+-(void)emailBusinessOrderConfirmation;
 @end
