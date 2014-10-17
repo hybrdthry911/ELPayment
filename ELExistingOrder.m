@@ -28,25 +28,19 @@
 -(void)emailCustomerOrderConfirmation:(PFBooleanResultBlock)handler
 {
     [PFCloud callFunctionInBackground:@"emailCustomerInvoiceFromOrder" withParameters:@{@"objectId":self.objectId} block:^(id object, NSError *error) {
-        if (error) {
-            NSLog(@"Error:%@",error);
-        }
+        handler(!error,error);
     }];
 }
 -(void)emailBusinessOrderConfirmation:(PFBooleanResultBlock)handler
 {
     [PFCloud callFunctionInBackground:@"emailBusinessInvoiceFromOrder" withParameters:@{@"objectId":self.objectId} block:^(id object, NSError *error) {
-        if (error) {
-            NSLog(@"Error:%@",error);
-        }
+        handler(!error,error);
     }];
 }
 -(void)emailCustomerTrackingFromOrder:(PFBooleanResultBlock)handler
 {
     [PFCloud callFunctionInBackground:@"emailCustomerTrackingFromOrder" withParameters:@{@"objectId":self.objectId} block:^(id object, NSError *error) {
-        if (error) {
-            NSLog(@"Error:%@",error);
-        }
+        handler(!error,error);
     }];    
 }
 +(void)nextOrderNumber:(PFIntegerResultBlock)handler{
