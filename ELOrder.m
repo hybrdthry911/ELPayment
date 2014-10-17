@@ -426,18 +426,6 @@
                                               self.customer.descriptor];
         
         
-<<<<<<< HEAD
-        orderObject[@"customer"] = [[ELUserManager sharedUserManager]currentUser];
-        if (self.subTotal) orderObject[@"subTotal"] = self.subTotal;
-        if (self.tax)        orderObject[@"tax"] = self.tax;
-        if (self.shipping)        orderObject[@"shipping"] = self.shipping;
-        orderObject[@"email"] = self.customer.email;
-        orderObject[@"stripeCustomerId"] = self.customer.identifier;
-        orderObject[@"stripeChargeIdentifier"] = self.charge.identifier;
-        orderObject[@"status"] = @"Processing";
-        orderObject[@"shippingCarrier"] = self.cheapestShipmentCarrier;
-        orderObject[@"cardId"] = self.card.identifier;\
-=======
         orderObject.customer = [[ELUserManager sharedUserManager]currentUser];
         if (self.subTotal) orderObject.subTotal = self.subTotal;
         if (self.tax)        orderObject.tax = self.tax;
@@ -448,7 +436,6 @@
         orderObject.status = @"Processing";
         orderObject.shippingCarrier = self.cheapestShipmentCarrier;
         orderObject.cardId = self.card.identifier;
->>>>>>> 7730a7ed929ac687de6bc5f0f2428d27f02bfa8b
         [orderObject incrementKey:@"orderNumber"];
 //        PFRelation *relation = [orderObject relationForKey:@"lineItems"];
         for (ELLineItem *lineItemPFObjects in self.lineItemsArray) {
