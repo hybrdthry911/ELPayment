@@ -436,8 +436,6 @@
         orderObject.status = @"Processing";
         orderObject.shippingCarrier = self.cheapestShipmentCarrier;
         orderObject.cardId = self.card.identifier;
-        [orderObject incrementKey:@"orderNumber"];
-//        PFRelation *relation = [orderObject relationForKey:@"lineItems"];
         for (ELLineItem *lineItemPFObjects in self.lineItemsArray) {
             [orderObject.lineItems addObject:lineItemPFObjects];
         }
