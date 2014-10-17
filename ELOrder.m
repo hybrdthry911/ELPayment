@@ -387,8 +387,8 @@
                                 }
                             }];
                         }
-                        [self emailCustomerOrderConfirmation];
-                        [self emailBusinessOrderConfirmation];
+                        [self.pfObjectRepresentation emailCustomerOrderConfirmation];
+                        [self.pfObjectRepresentation emailBusinessOrderConfirmation];
                         handler(self.orderStatus, error);
                     }
                 }];
@@ -411,10 +411,11 @@
             return;
         }
 
-        PFObject *orderObject = [PFObject objectWithClassName:@"Order"];
 
-        orderObject[@"total"] = @(self.charge.amountInCents.integerValue/100.0);
-        orderObject[@"billingInformation"] = [NSString stringWithFormat:@"%@\n%@%@\n%@, %@ %@\n%@\n%@",
+        ELExistingOrder *orderObject = [ELExistingOrder object];
+
+        orderObject.total = @(self.charge.amountInCents.integerValue/100.0);
+        orderObject.billingInformation = [NSString stringWithFormat:@"%@\n%@%@\n%@, %@ %@\n%@\n%@",
                                               self.card.name,
                                               self.card.addressLine1,
                                               self.card.addressLine2.length?[NSString stringWithFormat:@"\n%@",self.card.addressLine2]:@"",
@@ -425,6 +426,7 @@
                                               self.customer.descriptor];
         
         
+<<<<<<< HEAD
         orderObject[@"customer"] = [[ELUserManager sharedUserManager]currentUser];
         if (self.subTotal) orderObject[@"subTotal"] = self.subTotal;
         if (self.tax)        orderObject[@"tax"] = self.tax;
@@ -435,14 +437,26 @@
         orderObject[@"status"] = @"Processing";
         orderObject[@"shippingCarrier"] = self.cheapestShipmentCarrier;
         orderObject[@"cardId"] = self.card.identifier;\
+=======
+        orderObject.customer = [[ELUserManager sharedUserManager]currentUser];
+        if (self.subTotal) orderObject.subTotal = self.subTotal;
+        if (self.tax)        orderObject.tax = self.tax;
+        if (self.shipping)        orderObject.shipping = self.shipping;
+        orderObject.email = self.customer.email;
+        orderObject.stripeCustomerId = self.customer.identifier;
+        orderObject.stripeChargeIdentifier = self.charge.identifier;
+        orderObject.status = @"Processing";
+        orderObject.shippingCarrier = self.cheapestShipmentCarrier;
+        orderObject.cardId = self.card.identifier;
+>>>>>>> 7730a7ed929ac687de6bc5f0f2428d27f02bfa8b
         [orderObject incrementKey:@"orderNumber"];
-        PFRelation *relation = [orderObject relationForKey:@"lineItems"];
+//        PFRelation *relation = [orderObject relationForKey:@"lineItems"];
         for (ELLineItem *lineItemPFObjects in self.lineItemsArray) {
-            [relation addObject:lineItemPFObjects];
+            [orderObject.lineItems addObject:lineItemPFObjects];
         }
         PFQuery *countQuery = [PFQuery queryWithClassName:@"Order"];
         [countQuery countObjectsInBackgroundWithBlock:^(int number, NSError *error) {
-            orderObject[@"orderNumber"] = [NSNumber numberWithInt:number];
+            orderObject.orderNumber = [NSNumber numberWithInt:number];
             [orderObject incrementKey:@"orderNumber"];
             [orderObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
                 
@@ -455,22 +469,6 @@
                 handler(orderObject,error);
             }];
         }];
-    }];
-}
--(void)emailCustomerOrderConfirmation
-{
-    [PFCloud callFunctionInBackground:@"emailCustomerInvoiceFromOrder" withParameters:@{@"objectId":self.pfObjectRepresentation.objectId} block:^(id object, NSError *error) {
-        if (error) {
-            NSLog(@"Error:%@",error);
-        }
-    }];
-}
--(void)emailBusinessOrderConfirmation
-{
-    [PFCloud callFunctionInBackground:@"emailBusinessInvoiceFromOrder" withParameters:@{@"objectId":self.pfObjectRepresentation.objectId} block:^(id object, NSError *error) {
-        if (error) {
-            NSLog(@"Error:%@",error);
-        }
     }];
 }
 -(NSString *)parseID

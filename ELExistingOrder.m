@@ -25,4 +25,20 @@
 {
     return @"Order";
 }
+-(void)emailCustomerOrderConfirmation
+{
+    [PFCloud callFunctionInBackground:@"emailCustomerInvoiceFromOrder" withParameters:@{@"objectId":self.objectId} block:^(id object, NSError *error) {
+        if (error) {
+            NSLog(@"Error:%@",error);
+        }
+    }];
+}
+-(void)emailBusinessOrderConfirmation
+{
+    [PFCloud callFunctionInBackground:@"emailBusinessInvoiceFromOrder" withParameters:@{@"objectId":self.objectId} block:^(id object, NSError *error) {
+        if (error) {
+            NSLog(@"Error:%@",error);
+        }
+    }];
+}
 @end

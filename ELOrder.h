@@ -17,6 +17,8 @@
 @class ELLineItem;
 @class Product;
 @class STPCharge;
+@class ELExistingOrder;
+
 typedef enum
 {
    elOrderStatusNotReadyForCharge, elOrderStatusReadyToCharge, elOrderStatusAttemptingCharge, elOrderStatusChargeUnsuccessful, elOrderStatusChargeSucceeded,elOrderStatusComplete
@@ -34,7 +36,7 @@ typedef void (^elOrderCompletionBlock)(ELOrderStatus orderStatus, NSError* error
  @property (strong, nonatomic) PFUser *user;
  @property (strong, nonatomic) ELCharge *charge;
  @property (strong, nonatomic) NSString *cheapestShipmentCarrier;
- @property (strong, nonatomic) PFObject *pfObjectRepresentation;
+ @property (strong, nonatomic) ELExistingOrder *pfObjectRepresentation;
  @property (strong, nonatomic) NSArray *shippingRates;
  @property ELOrderStatus orderStatus;
 -(void)emptyCart;
