@@ -41,4 +41,17 @@
         }
     }];
 }
+-(void)emailCustomerTrackingFromOrder
+{
+    [PFCloud callFunctionInBackground:@"emailCustomerTrackingFromOrder" withParameters:@{@"objectId":self.objectId} block:^(id object, NSError *error) {
+        if (error) {
+            NSLog(@"Error:%@",error);
+        }
+    }];    
+}
++(void)nextOrderNumber:(PFIntegerResultBlock)handler{
+    [PFCloud callFunctionInBackground:@"nextOrderNumber" withParameters:nil block:^(id object, NSError *error) {
+        handler([object intValue],error);
+    }];
+}
 @end

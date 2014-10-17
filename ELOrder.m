@@ -439,8 +439,7 @@
         for (ELLineItem *lineItemPFObjects in self.lineItemsArray) {
             [orderObject.lineItems addObject:lineItemPFObjects];
         }
-        PFQuery *countQuery = [PFQuery queryWithClassName:@"Order"];
-        [countQuery countObjectsInBackgroundWithBlock:^(int number, NSError *error) {
+        [ELExistingOrder nextOrderNumber:^(int number, NSError *error) {
             orderObject.orderNumber = [NSNumber numberWithInt:number];
             [orderObject incrementKey:@"orderNumber"];
             [orderObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {

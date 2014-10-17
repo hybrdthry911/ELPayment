@@ -17,8 +17,8 @@
  @property (strong, nonatomic) NSString *cardId;
  @property (strong, nonatomic) PFUser *customer;
  @property (readonly, nonatomic) PFRelation *lineItems;
-
-
++(void)nextOrderNumber:(PFIntegerResultBlock)handler;
+-(void)emailCustomerTrackingFromOrder;
 -(void)emailCustomerOrderConfirmation;
 -(void)emailBusinessOrderConfirmation;
 @end
