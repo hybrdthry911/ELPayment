@@ -50,7 +50,7 @@
     }];    
 }
 +(void)nextOrderNumber:(PFIntegerResultBlock)handler{
-    [PFCloud callFunctionInBackground:@"nextOrderNumber" withParameters:nil block:^(id object, NSError *error) {
+    [PFCloud callFunctionInBackground:@"nextOrderNumber" withParameters:@{} block:^(id object, NSError *error) {
         handler([object intValue],error);
     }];
 }
