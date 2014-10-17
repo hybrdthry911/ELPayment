@@ -33,6 +33,15 @@ static ELUserManager *sharedUserManager = nil;
         [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(userLoggedOut:) name:elNotificationLogoutSucceeded object:nil];
         [self setSingleton];
         if ([PFUser currentUser]) [self userLoggedIn:nil];
+        else{
+            [PFAnonymousUtils logInWithBlock:^(PFUser *user, NSError *error) {
+                
+                if (!error) {
+                    self.currentUser = user;
+                    [[NSNotificationCenter defaultCenter]postNotificationName:elNotificationAnonLoginSucceeded object:user];
+                }
+            }];
+        }
     }
     return self;
 }
@@ -234,14 +243,14 @@ static ELUserManager *sharedUserManager = nil;
         [[NSNotificationCenter defaultCenter]postNotificationName:elNotificationAnonLoginSucceeded object:self.currentUser];
         NSLog(@"currentUser:%@",self.currentUser);
     }
-//    
-//    [PFAnonymousUtils logInWithBlock:^(PFUser *user, NSError *error) {
-//        
-//        if (!error) {
-//            self.currentUser = user;
-//            [[NSNotificationCenter defaultCenter]postNotificationName:elNotificationAnonLoginSucceeded object:user];
-//        }
-//    }];
+    
+    [PFAnonymousUtils logInWithBlock:^(PFUser *user, NSError *error) {
+
+        if (!error) {
+            self.currentUser = user;
+            [[NSNotificationCenter defaultCenter]postNotificationName:elNotificationAnonLoginSucceeded object:user];
+        }
+    }];
     
 }
 @end
