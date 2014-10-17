@@ -135,6 +135,8 @@
             break;
         case elExistingOrderIndexCC:
             return !!self.order.card;
+        case elExistingOrderIndexRefundAmount:
+            return (self.order.amountRefunded && self.order.amountRefunded.floatValue>0);
         default:
             return 1;
             break;
@@ -262,6 +264,18 @@
             }
             amountCell.amountTypeLabel.text = @"Total:";
             amountCell.amountLabel.text = [NSString stringWithFormat:@"$%.2f",self.order.total.floatValue];
+            cell = amountCell;
+        }
+            break;
+        case elExistingOrderIndexRefundAmount:
+        {
+            static NSString *refundedIdentifier = @"RefundedCell";
+            ELAmountTableViewCell *amountCell = [tableView dequeueReusableCellWithIdentifier:refundedIdentifier];
+            if (!amountCell) {
+                amountCell = [[ELAmountTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:refundedIdentifier];
+            }
+            amountCell.amountTypeLabel.text = @"Refunded:";
+            amountCell.amountLabel.text = [NSString stringWithFormat:@"$%.2f",self.order.amountRefunded.floatValue];
             cell = amountCell;
         }
             break;

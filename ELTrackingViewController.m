@@ -26,4 +26,10 @@
 {
         [self hideActivityView];
 }
+-(void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error
+{
+    [self hideActivityView];
+    UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:@"Could not load Tracking Information" delegate:self cancelButtonTitle:@"Close" otherButtonTitles:nil];
+    [myAlert show];
+}
 @end

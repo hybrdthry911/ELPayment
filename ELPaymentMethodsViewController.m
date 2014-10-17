@@ -249,14 +249,14 @@
            if (!error) {
                UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Success" message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
                [myAlert show];
-               [self autoCloseAlertView:myAlert];
+               [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:1];
                [[ELUserManager sharedUserManager]fetchCustomer];
            }
            else{
                NSLog(@"error:%@",error);
                UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error Adding Apple Payment Method" message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
                [myAlert show];
-               [self autoCloseAlertView:myAlert];
+               [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:1];
            }
            [self hideActivityView];
 #warning handle errors here

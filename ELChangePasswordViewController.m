@@ -92,7 +92,7 @@
                     myAlert.message = @"Password Not Updated";
                 }
                 [myAlert show];
-                [self autoCloseAlertView:myAlert];
+                [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:1];
                 [self.navigationController popViewControllerAnimated:YES];
             }];
         }
