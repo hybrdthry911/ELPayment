@@ -67,6 +67,9 @@ static ELUserManager *sharedUserManager = nil;
 -(void)userLoggedIn:(NSNotification *)notification
 {
     self.currentUser = [PFUser currentUser];
+    PFInstallation *currentInstallation = [PFInstallation currentInstallation];
+    currentInstallation[@"user"] = [PFUser currentUser];
+    [currentInstallation saveInBackground];
     if ([PFUser currentUser])
     {
         [[PFUser currentUser] fetchInBackgroundWithBlock:^(PFObject *object, NSError *error)
