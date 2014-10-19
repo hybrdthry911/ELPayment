@@ -21,4 +21,5 @@
 -(void)emailCustomerTrackingFromOrder:(PFBooleanResultBlock)handler;
 -(void)emailCustomerOrderConfirmation:(PFBooleanResultBlock)handler;
 -(void)emailBusinessOrderConfirmation:(PFBooleanResultBlock)handler;
+-(void)sendMessage:(NSString *)message toCustomerWithCompletion:(PFBooleanResultBlock)handler;
 @end

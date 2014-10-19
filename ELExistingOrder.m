@@ -27,25 +27,51 @@
 }
 -(void)emailCustomerOrderConfirmation:(PFBooleanResultBlock)handler
 {
-    [PFCloud callFunctionInBackground:@"emailCustomerInvoiceFromOrder" withParameters:@{@"objectId":self.objectId} block:^(id object, NSError *error) {
+    [PFCloud callFunctionInBackground:@"emailCustomerInvoiceFromOrder"
+                       withParameters:@{
+                                        @"objectId":self.objectId
+                                        }
+                                block:^(id object, NSError *error) {
         handler(!error,error);
     }];
 }
 -(void)emailBusinessOrderConfirmation:(PFBooleanResultBlock)handler
 {
-    [PFCloud callFunctionInBackground:@"emailBusinessInvoiceFromOrder" withParameters:@{@"objectId":self.objectId} block:^(id object, NSError *error) {
+    [PFCloud callFunctionInBackground:@"emailBusinessInvoiceFromOrder"
+                       withParameters:@{
+                                        @"objectId":self.objectId
+                                        }
+                                block:^(id object, NSError *error) {
         handler(!error,error);
     }];
 }
 -(void)emailCustomerTrackingFromOrder:(PFBooleanResultBlock)handler
 {
-    [PFCloud callFunctionInBackground:@"emailCustomerTrackingFromOrder" withParameters:@{@"objectId":self.objectId} block:^(id object, NSError *error) {
+    [PFCloud callFunctionInBackground:@"emailCustomerTrackingFromOrder"
+                       withParameters:@{
+                                        @"objectId":self.objectId
+                                        }
+                                block:^(id object, NSError *error) {
         handler(!error,error);
     }];    
 }
 +(void)nextOrderNumber:(PFIntegerResultBlock)handler{
-    [PFCloud callFunctionInBackground:@"nextOrderNumber" withParameters:@{} block:^(id object, NSError *error) {
+    [PFCloud callFunctionInBackground:@"nextOrderNumber"
+                       withParameters:@{
+                                        }
+                                block:^(id object, NSError *error) {
         handler([object intValue],error);
     }];
 }
+-(void)sendMessage:(NSString *)message toCustomerWithCompletion:(PFBooleanResultBlock)handler{
+    [PFCloud callFunctionInBackground:@"emailCustomerMessage"
+                       withParameters:@{
+                                        @"message":message,
+                                        @"objectId":self.objectId
+                                        }
+                                block:^(id object, NSError *error) {
+                                    handler(!error,error);
+                                }];
+}
+
 @end

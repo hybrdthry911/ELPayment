@@ -212,7 +212,6 @@
         }
         if (indexPath.row % 2 == 0) cell.contentView.backgroundColor = [[UIColor whiteColor]colorWithAlphaComponent:.8];
         else    cell.contentView.backgroundColor = [UIColor colorWithRed:.9 green:.9 blue:.9 alpha:.85];
-      //   [productCell showCart:YES];
         ELProduct *product = self.productArray[indexPath.row];
         [productCell setProduct:product];
         [productCell.thumbnail setFile:product.mainPhoto];
