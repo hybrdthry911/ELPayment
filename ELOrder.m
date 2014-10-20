@@ -406,9 +406,9 @@
     [PFObject saveAllInBackground:self.lineItemsArray block:^(BOOL succeeded, NSError *error)
     {
         if (!succeeded || error) {
-            NSLog(@"Error:%@",error);
-            handler(nil,error);
-            return;
+            for (ELLineItem *lineItem in self.lineItemsArray) {
+                [lineItem saveEventually];
+            }
         }
 
 
@@ -439,11 +439,13 @@
         for (ELLineItem *lineItemPFObjects in self.lineItemsArray) {
             [orderObject.lineItems addObject:lineItemPFObjects];
         }
-        [ELExistingOrder nextOrderNumber:^(int number, NSError *error) {
-            orderObject.orderNumber = [NSNumber numberWithInt:number];
+        [ELExistingOrder nextOrderNumber:^(int number, NSError *error)
+        {
+            orderObject.orderNumber = error? @(-1) : [NSNumber numberWithInt:number];
             [orderObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
                 
                 if (error) {
+                    [orderObject saveEventually];
                     handler(orderObject,error);
                     return;
                 }
