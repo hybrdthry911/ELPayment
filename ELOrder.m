@@ -446,7 +446,8 @@
             orderObject.orderNumber = error? @(-1) : [NSNumber numberWithInt:number];
             [orderObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
                 
-                if (error) {
+                if (error)
+                {
                     [orderObject saveEventually];
                     handler(orderObject,error);
                     return;

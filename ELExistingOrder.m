@@ -37,7 +37,9 @@
                                         @"objectId":self.objectId
                                         }
                                 block:^(id object, NSError *error) {
-        handler(!error,error);
+                                    if (handler) {
+                                        handler(!error,error);
+                                    }
     }];
 }
 -(void)emailBusinessOrderConfirmation:(PFBooleanResultBlock)handler
@@ -47,7 +49,9 @@
                                         @"objectId":self.objectId
                                         }
                                 block:^(id object, NSError *error) {
-        handler(!error,error);
+                                    if (handler) {
+                                        handler(!error,error);
+                                    }
     }];
 }
 -(void)emailCustomerTrackingFromOrder:(PFBooleanResultBlock)handler
@@ -57,7 +61,9 @@
                                         @"objectId":self.objectId
                                         }
                                 block:^(id object, NSError *error) {
-        handler(!error,error);
+                                    if (handler) {
+                                        handler(!error,error);
+                                    }
     }];    
 }
 +(void)nextOrderNumber:(PFIntegerResultBlock)handler{
@@ -75,7 +81,9 @@
                                         @"objectId":self.objectId
                                         }
                                 block:^(id object, NSError *error) {
-                                    handler(!error,error);
+                                    if (handler) {
+                                        handler(!error,error);
+                                    }
                                 }];
 }
 

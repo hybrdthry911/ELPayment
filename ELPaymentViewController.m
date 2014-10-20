@@ -810,8 +810,10 @@ typedef enum{
             [self.currentUser fetchInBackgroundWithBlock:^(PFObject *object, NSError *error) {
                 
             }];
-            self.verifyEmailAlertView = [[UIAlertView alloc]initWithTitle:@"Error" message:@"You haven't verified your email address associated with your account." delegate:self cancelButtonTitle:@"Close" otherButtonTitles:@"Resend",nil];
-            [self.verifyEmailAlertView show];
+            if (self.paymentStage != elPaymentStageComplete) {
+                self.verifyEmailAlertView = [[UIAlertView alloc]initWithTitle:@"Error" message:@"You haven't verified your email address associated with your account." delegate:self cancelButtonTitle:@"Close" otherButtonTitles:@"Resend",nil];
+                [self.verifyEmailAlertView show];
+            }
         }
         else
         {
