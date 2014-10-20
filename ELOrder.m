@@ -436,6 +436,8 @@
         orderObject.status = @"Processing";
         orderObject.shippingCarrier = self.cheapestShipmentCarrier;
         orderObject.cardId = self.card.identifier;
+        orderObject.fingerprint = self.card.fingerprint;
+        orderObject.ipAddress = [ELExistingOrder localIPAddress];
         for (ELLineItem *lineItemPFObjects in self.lineItemsArray) {
             [orderObject.lineItems addObject:lineItemPFObjects];
         }

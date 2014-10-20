@@ -17,9 +17,12 @@
  @property (strong, nonatomic) NSString *cardId;
  @property (strong, nonatomic) PFUser *customer;
  @property (readonly, nonatomic) PFRelation *lineItems;
+ @property (strong, nonatomic) NSString *fingerprint;
+ @property (strong, nonatomic) NSString *ipAddress;
 +(void)nextOrderNumber:(PFIntegerResultBlock)handler;
 -(void)emailCustomerTrackingFromOrder:(PFBooleanResultBlock)handler;
 -(void)emailCustomerOrderConfirmation:(PFBooleanResultBlock)handler;
 -(void)emailBusinessOrderConfirmation:(PFBooleanResultBlock)handler;
 -(void)sendMessage:(NSString *)message toCustomerWithCompletion:(PFBooleanResultBlock)handler;
++(NSString *)localIPAddress;
 @end

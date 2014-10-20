@@ -6,11 +6,29 @@
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
 
+
+
+#ifndef adddynamic
+#define adddynamic
+
+#define ADD_DYNAMIC_PROPERTY(PROPERTY_TYPE,PROPERTY_NAME,SETTER_NAME) \
+@dynamic PROPERTY_NAME ; \
+static char kProperty##PROPERTY_NAME; \
+- ( PROPERTY_TYPE ) PROPERTY_NAME \
+{ \
+return ( PROPERTY_TYPE ) objc_getAssociatedObject(self, &(kProperty##PROPERTY_NAME ) ); \
+} \
+\
+- (void) SETTER_NAME :( PROPERTY_TYPE ) PROPERTY_NAME \
+{ \
+objc_setAssociatedObject(self, &kProperty##PROPERTY_NAME , PROPERTY_NAME , OBJC_ASSOCIATION_RETAIN); \
+} \
+
+#endif
+
 #import "UIView+UIView_Utilities.h"
 #import <objc/runtime.h>
-@interface UIView (UIView_Utilities_Private)
 
-@end
 
 @implementation UIView (UIView_Utilities)
 
