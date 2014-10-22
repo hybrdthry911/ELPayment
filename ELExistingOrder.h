@@ -7,6 +7,8 @@
 //
 
 #import <Parse/Parse.h>
+
+typedef void (^ELStringCompletionHandler)(NSString *string,NSError *error);
 @class ELCard;
 @class ELCustomer;
 @interface ELExistingOrder : PFObject <PFSubclassing>
@@ -24,5 +26,5 @@
 -(void)emailCustomerOrderConfirmation:(PFBooleanResultBlock)handler;
 -(void)emailBusinessOrderConfirmation:(PFBooleanResultBlock)handler;
 -(void)sendMessage:(NSString *)message toCustomerWithCompletion:(PFBooleanResultBlock)handler;
-+(NSString *)localIPAddress;
++(void)localIPAddress:(ELStringCompletionHandler)handler;
 @end

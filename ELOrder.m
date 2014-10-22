@@ -9,7 +9,6 @@
 #import "Postmaster.h"
 #import "Shipment.h"
 #import "RateResult.h"
-
 #define USPS_ACCOUNT_ID @"305ENOUG1715"
 #define USPS_ORIGIN_ZIP @"01013"
 #define USPS_BASE_URL @"http://production.shippingapis.com/ShippingAPI.dll"
@@ -424,7 +423,7 @@
                                               self.card.addressZip,
                                               self.customer.email,
                                               self.customer.descriptor];
-        
+
         
         orderObject.customer = [[ELUserManager sharedUserManager]currentUser];
         if (self.subTotal) orderObject.subTotal = self.subTotal;
@@ -437,24 +436,26 @@
         orderObject.shippingCarrier = self.cheapestShipmentCarrier;
         orderObject.cardId = self.card.identifier;
         orderObject.fingerprint = self.card.fingerprint;
-        orderObject.ipAddress = [ELExistingOrder localIPAddress];
-        for (ELLineItem *lineItemPFObjects in self.lineItemsArray) {
-            [orderObject.lineItems addObject:lineItemPFObjects];
-        }
-        [ELExistingOrder nextOrderNumber:^(int number, NSError *error)
-        {
-            orderObject.orderNumber = error? @(-1) : [NSNumber numberWithInt:number];
-            [orderObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
-                
-                if (error)
-                {
-                    [orderObject saveEventually];
+        [ELExistingOrder localIPAddress:^(NSString *string, NSError *error) {
+            if (string) orderObject.ipAddress = string;
+            for (ELLineItem *lineItemPFObjects in self.lineItemsArray) {
+                [orderObject.lineItems addObject:lineItemPFObjects];
+            }
+            [ELExistingOrder nextOrderNumber:^(int number, NSError *error)
+            {
+                orderObject.orderNumber = error? @(-1) : [NSNumber numberWithInt:number];
+                [orderObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                    
+                    if (error)
+                    {
+                        [orderObject saveEventually];
+                        handler(orderObject,error);
+                        return;
+                    }
+                    self.charge.descriptor = orderObject.objectId;
+                    self.pfObjectRepresentation = orderObject;
                     handler(orderObject,error);
-                    return;
-                }
-                self.charge.descriptor = orderObject.objectId;
-                self.pfObjectRepresentation = orderObject;
-                handler(orderObject,error);
+                }];
             }];
         }];
     }];

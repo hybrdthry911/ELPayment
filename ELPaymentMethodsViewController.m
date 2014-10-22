@@ -136,25 +136,25 @@
             item.label = @"Add Payment method without Charge.";
             paymentRequest.paymentSummaryItems = @[item];
             
-            UIViewController *paymentController;
-            if ([Stripe canSubmitPaymentRequest:paymentRequest]) {
-#ifdef DEBUG
-                paymentController = [[STPTestPaymentAuthorizationViewController alloc]
+            if ([Stripe canSubmitPaymentRequest:paymentRequest])
+            {
+                PKPaymentAuthorizationViewController *paymentController = [[PKPaymentAuthorizationViewController alloc]
                                      initWithPaymentRequest:paymentRequest];
-                [(STPTestPaymentAuthorizationViewController *)paymentController setDelegate:self];
-#else
-                paymentController = [[PKPaymentAuthorizationViewController alloc]
-                                     initWithPaymentRequest:paymentRequest];
-                [(PKPaymentAuthorizationViewController *)paymentController setDelegate:self];
-#endif
+                paymentController.delegate = self;
                 UIViewController *topController = [ELPaymentMethodsViewController topMostController];
                 [topController presentViewController:paymentController animated:YES completion:nil];
+            }
+            else
+            {
+                UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
+                [myAlert show];
+                [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:1];
+                [self hideActivityView];
             }
         }
         else
         {
             [[ELUserManager sharedUserManager]verifyPasswordWithComletion:^(BOOL verified, NSError *error) {
-                UIViewController *paymentController;
                 if (verified)
                 {
                     PKPaymentRequest *paymentRequest =[ELStripe paymentRequestWithMerchantIdentifier:@"merchant.com.enoughlogic.fuellogic"];
@@ -167,21 +167,18 @@
                     paymentRequest.paymentSummaryItems = @[item];
                     if ([Stripe canSubmitPaymentRequest:paymentRequest])
                     {
-                        
-#ifdef DEBUG
-                        paymentController = [[STPTestPaymentAuthorizationViewController alloc]
-                                             initWithPaymentRequest:paymentRequest];
-                        [(STPTestPaymentAuthorizationViewController *)paymentController setDelegate:self];
-#else
-                        paymentController = [[PKPaymentAuthorizationViewController alloc]
-                                             initWithPaymentRequest:paymentRequest];
-                        [(PKPaymentAuthorizationViewController *)paymentController setDelegate:self];
-#endif
-                        
+                        PKPaymentAuthorizationViewController *paymentController = [[PKPaymentAuthorizationViewController alloc]
+                                                                                   initWithPaymentRequest:paymentRequest];
+                        paymentController.delegate = self;
                         UIViewController *topController = [ELPaymentMethodsViewController topMostController];
                         [topController presentViewController:paymentController animated:YES completion:nil];
                     }
-                    
+                    else{
+                        UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
+                        [myAlert show];
+                        [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:1];
+                        [self hideActivityView];
+                    }
                 }
                 else [self hideActivityView];
             }];

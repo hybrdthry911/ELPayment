@@ -211,7 +211,7 @@
                     PFUser *user = self.currentUser;
                     if (!user) user = [PFUser user];
                     user.username = [self.usernameTextField.text lowercaseString];
-                    user.password = self.usernameTextField.text;
+                    user.password = self.passwordTextfield.text;
                     user.email = [self.emailTextField.text lowercaseString];
                     [user signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error)
                     {

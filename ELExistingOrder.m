@@ -13,6 +13,8 @@
 #include <net/if.h>
 #include <ifaddrs.h>
 
+#import "AFHTTPClient.h"
+#import "AFJSONRequestOperation.h"
 
 @interface ELExistingOrder()
 
@@ -102,11 +104,29 @@
 }
 
 // return IP Address
-+ (NSString *)localIPAddress
++ (void)localIPAddress:(ELStringCompletionHandler)handler
 {
-    struct hostent *host = gethostbyname([[self hostname] UTF8String]);
-    if (!host) {herror("resolv"); return nil;}
-    struct in_addr **list = (struct in_addr **)host->h_addr_list;
-    return [NSString stringWithCString:inet_ntoa(*list[0]) encoding:NSUTF8StringEncoding];
+    
+    // Defines the webservice URL
+    NSURL *URL = [NSURL URLWithString:@"http://ip-api.com/json"];
+    
+    // Start Connection
+    AFHTTPClient *httpClient = [[AFHTTPClient alloc] initWithBaseURL:URL];
+    
+    // Define the JSON header
+    [httpClient setDefaultHeader:@"Accept" value:@"text/json"];
+    
+    // Set the Request
+    NSMutableURLRequest *request = [httpClient requestWithMethod:@"GET" path:@"" parameters:nil];
+    
+    AFJSONRequestOperation *operation = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON)
+    {
+        handler([JSON valueForKey:@"query"],nil);
+    } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON){
+        handler(nil,error);
+    }];
+    
+    // Run the Request
+    [operation start];
 }
 @end
