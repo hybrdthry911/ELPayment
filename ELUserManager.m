@@ -92,6 +92,10 @@ static ELUserManager *sharedUserManager = nil;
 }
 -(void)fetchCustomer
 {
+    [self fetchCustomerCompletion:nil];
+}
+-(void)fetchCustomerCompletion:(ELCustomerCompletionBlock)handler
+{
     //If user exists check if the user has verified their email
     if (self.currentUser[@"stripeID"])
     {
@@ -99,11 +103,8 @@ static ELUserManager *sharedUserManager = nil;
             if (customer && !error)
             {
                 self.currentCustomer = customer;
-                [ELCustomer retrieveCustomerWithID:self.currentUser[@"stripeID"] completion:^(ELCustomer *customer, NSError *error)
-                {
-                    self.currentCustomer = customer;
-                    [[NSNotificationCenter defaultCenter]postNotificationName:elNotificationCustomerDownloadComplete object:self.currentCustomer];
-                }];
+                if (handler) handler(customer,error);
+                [[NSNotificationCenter defaultCenter]postNotificationName:elNotificationCustomerDownloadComplete object:self.currentCustomer];
             }
             else [[NSNotificationCenter defaultCenter]postNotificationName:elNotificationCustomerDownloadComplete object:self.currentCustomer];
         }];
@@ -144,7 +145,8 @@ static ELUserManager *sharedUserManager = nil;
         ELViewController *vc = (ELViewController *)[ELUserManager topMostController];
         [vc showActivityView];
         
-        [self verifyPassword:password completion:^(BOOL verified, NSError *error) {
+        [self verifyPassword:password completion:^(BOOL verified, NSError *error)
+        {
             [vc hideActivityView];
             self.passwordHandler(verified,error);
         }];

@@ -7,12 +7,14 @@
 //
 
 #import "ELPaymentHeader.h"
+#import <AddressBook/AddressBook.h>
 @interface ELOrderViewController ()
  @property (strong, nonatomic) UITableView *tableView;
-@property NSInteger currentSelectedTableViewCellRow;
+ @property NSInteger currentSelectedTableViewCellRow;
  @property (strong, nonatomic) UIView *footerView;
  @property (strong, nonatomic) UILabel *totalLabel, *totalQuantityLabel;
  @property (strong, nonatomic) UIBarButtonItem *loginButton;
+ @property (strong, nonatomic) UIAlertView *verifyEmailAlertView;
  @property (strong, nonatomic) ELLoginViewController *loginViewController;
 @end
 
@@ -126,17 +128,6 @@
                                                                style:UIBarButtonItemStyleDone target:self action:@selector(loginButtonPressed:)];
     self.navigationItem.rightBarButtonItem = self.loginButton;
 }
--(void)orderChanged:(NSNotification *)notification
-{
-    if (notification.object == self.order) [self.tableView reloadData];
-    self.totalLabel.text = [NSString stringWithFormat:@"Total: $%@",self.order.subTotal];
-    self.totalQuantityLabel.text = [NSString stringWithFormat:@"Total Items:%@",self.order.totalNumberOfItems];
-    if (self.currentSelectedTableViewCellRow>=0) {
-        ELLineItemTableViewCell *cell = (ELLineItemTableViewCell *)[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForItem:self.currentSelectedTableViewCellRow inSection:0]];
-        [cell resetSubtotals];
-        
-    }
-}
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
@@ -154,18 +145,44 @@
 {
     _order = order;
 }
-
+-(void)orderChanged:(NSNotification *)notification
+{
+    if (notification.object == self.order) [self.tableView reloadData];
+    
+    self.totalLabel.text = [NSString stringWithFormat:@"Total: $%@",self.order.subTotal];
+    self.totalQuantityLabel.text = [NSString stringWithFormat:@"Total Items:%@",self.order.totalNumberOfItems];
+    
+    if (self.currentSelectedTableViewCellRow>=0)
+    {
+        ELLineItemTableViewCell *cell = (ELLineItemTableViewCell *)[self.tableView cellForRowAtIndexPath:[NSIndexPath indexPathForRow:self.currentSelectedTableViewCellRow inSection:0]];
+        [cell resetSubtotals];
+    }
+//    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationNone];
+}
 -(void)quantityZero:(NSNotification *)notification
 {
-    NSIndexPath *indexPath =[NSIndexPath indexPathForRow:[self.order.lineItemsArray indexOfObject:notification.object] inSection:0];
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:[self.order.lineItemsArray indexOfObject:notification.object] inSection:0];
     if (indexPath.row == self.currentSelectedTableViewCellRow) self.currentSelectedTableViewCellRow = -1;
-    
     [self.order.lineItemsArray removeObject:notification.object];
+    
     [self.tableView beginUpdates];
+    
     [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    if (!self.order.lineItemsArray.count) [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+    if (!self.order.lineItemsArray.count){
+        [self.tableView deleteSections:[NSIndexSet indexSetWithIndex:1] withRowAnimation:UITableViewRowAnimationFade];
+        [self.tableView insertRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:0]] withRowAnimation:UITableViewRowAnimationFade];
+    }
+    [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationFade];
     [self.tableView endUpdates];
+
     [self reColor];
+    CGPoint point = CGPointMake(((UIScrollView *)self.tableView).contentOffset.x,
+                                ((UIScrollView *)self.tableView).contentOffset.y+1);
+    [((UIScrollView *)self.tableView) setContentOffset:point animated:NO];
+    
+    point = CGPointMake(((UIScrollView *)self.tableView).contentOffset.x,
+                        ((UIScrollView *)self.tableView).contentOffset.y-1);
+    [((UIScrollView *)self.tableView) setContentOffset:point animated:NO];
     
     self.totalLabel.text = [NSString stringWithFormat:@"Total: $%@",self.order.subTotal];
     self.totalQuantityLabel.text = [NSString stringWithFormat:@"Total Items:%@",self.order.totalNumberOfItems];
@@ -188,18 +205,25 @@
 }
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    return 2;
+    NSInteger sections = self.order.lineItemsArray.count?2:1;
+    return sections;
 }
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-//    if (section == 1) return 1;
-    if (section) return 1;
-    if (!self.order.lineItemsArray.count) return 1;
-    return self.order.lineItemsArray.count;
+    NSInteger rows;
+    if (section) rows = 1;
+    else rows = self.order.lineItemsArray.count?self.order.lineItemsArray.count:1;
+    return rows;
 }
 -(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
 {
-    if (section) return nil;
+    if (section)
+    {
+        UIView *view = [[UIView alloc]initWithFrame:CGRectMake(0, 0, tableView.bounds.size.width, 25)];
+        view.backgroundColor = [UIColor whiteColor];
+        return view;
+    }
+    
     UIView *view = [[UIView alloc]initWithFrame:CGRectMake(0, 0, tableView.bounds.size.width, 25)];
     UILabel *quantityLabel = [[UILabel alloc]initWithFrame:CGRectMake(5, 0, 100, 20)];
     view.backgroundColor = ICON_BLUE_SOLID;
@@ -221,81 +245,85 @@
     
     return view;
 }
-
 -(UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section
 {
+    
     if (section) return nil;
     
+    UIView *footerView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, tableView.bounds.size.width, 50)];
+    self.footerView = footerView;
+    footerView.backgroundColor = ICON_BLUE_SOLID;
+    footerView.layer.borderColor = [UIColor whiteColor].CGColor;
+    footerView.layer.borderWidth = .5;
     
-    if (!self.footerView) self.footerView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, tableView.bounds.size.width, 50)];
-    else{
-        [self.totalQuantityLabel removeFromSuperview];
-        [self.totalLabel removeFromSuperview];
-    }
-    self.footerView.backgroundColor = ICON_BLUE_SOLID;
-    self.footerView.layer.borderColor = [UIColor whiteColor].CGColor;
-    self.footerView.layer.borderWidth = .5;
+    UILabel *totalQuantityLabel = [[UILabel alloc]initWithFrame:CGRectMake(5, 0, 100, 30)];
+    self.totalQuantityLabel = totalQuantityLabel;
+    totalQuantityLabel.textAlignment = NSTextAlignmentCenter;
+    totalQuantityLabel.textColor = [UIColor whiteColor];
+    totalQuantityLabel.font =[UIFont fontWithName:MY_FONT_1 size:15];
+    totalQuantityLabel.text = [NSString stringWithFormat:@"Total Items:%@",self.order.totalNumberOfItems];
     
-    self.totalQuantityLabel = [[UILabel alloc]initWithFrame:CGRectMake(5, 0, 100, 30)];
-    self.totalQuantityLabel.textAlignment = NSTextAlignmentCenter;
-    self.totalQuantityLabel.textColor = [UIColor whiteColor];
-    self.totalQuantityLabel.font =[UIFont fontWithName:MY_FONT_1 size:15];
-    self.totalQuantityLabel.text = [NSString stringWithFormat:@"Total Items:%@",self.order.totalNumberOfItems];
+    UILabel *totalLabel = [[UILabel alloc]initWithFrame:CGRectMake(105, 0, self.footerView.bounds.size.width-110, 30)];
+    self.totalLabel = totalLabel;
+    totalLabel.textAlignment = NSTextAlignmentRight;
+    totalLabel.textColor = [UIColor whiteColor];
+    totalLabel.font =[UIFont fontWithName:MY_FONT_1 size:15];
+    totalLabel.text = [NSString stringWithFormat:@"Total: $%.2f",self.order.subTotal.floatValue];
     
-    self.totalLabel = [[UILabel alloc]initWithFrame:CGRectMake(105, 0, self.footerView.bounds.size.width-110, 30)];
-    self.totalLabel.textAlignment = NSTextAlignmentRight;
-    self.totalLabel.textColor = [UIColor whiteColor];
-    self.totalLabel.font =[UIFont fontWithName:MY_FONT_1 size:15];
-    self.totalLabel.text = [NSString stringWithFormat:@"Total: $%.2f",self.order.subTotal.floatValue];
+    [footerView addSubview:totalLabel];
+    [footerView addSubview:totalQuantityLabel];
     
-    [self.footerView addSubview:self.totalLabel];
-    [self.footerView addSubview:self.totalQuantityLabel];
-    
-    return self.footerView;
+    return footerView;
 }
 
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *CellIdentifier = @"LineCell";
-    static NSString *checkoutIdentifier = @"CheckoutCell";
     
-    if (indexPath.section) {
-        UITableViewCell *cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:checkoutIdentifier];
-        cell.backgroundColor = ICON_BLUE_SOLID;
-        cell.textLabel.font = [UIFont fontWithName:MY_FONT_1 size:18];
-        cell.textLabel.textAlignment = NSTextAlignmentCenter;
-        cell.textLabel.textColor = [UIColor whiteColor];
-        cell.textLabel.text = @"Checkout";
+    static NSString *LineCellIdentifier =  @"LineCell";
+    static NSString *checkoutIdentifier =  @"CheckoutCell";
+    static NSString *emptyCellIdentifier = @"emptyOrderCell";
+    
+    if (indexPath.section == 1)
+    {
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:checkoutIdentifier];
+        if (!cell)
+        {
+            cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:checkoutIdentifier];
+            cell.backgroundColor = ICON_BLUE_SOLID;
+            cell.textLabel.font = [UIFont fontWithName:MY_FONT_1 size:18];
+            cell.textLabel.textAlignment = NSTextAlignmentCenter;
+            cell.textLabel.textColor = [UIColor whiteColor];
+            cell.textLabel.text = @"Checkout";
+        }
         return cell;
     }
-    
-    if(self.order.lineItemsArray.count)
+    if(!self.order.lineItemsArray.count)
     {
-        ELLineItemTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
-        if (!cell) {
-            cell = [[ELLineItemTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+        UITableViewCell *emptyOrderCell = [tableView dequeueReusableCellWithIdentifier:emptyCellIdentifier];
+        
+        if (!emptyOrderCell)
+        {
+            emptyOrderCell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:emptyCellIdentifier];
+            [emptyOrderCell shineOnRepeatWithInterval:5];
+            emptyOrderCell.textLabel.textColor = ICON_BLUE_SOLID;
+            emptyOrderCell.textLabel.font =[UIFont fontWithName:MY_FONT_1 size:15];
+        }
+        emptyOrderCell.textLabel.text = [NSString stringWithFormat:@"No Items in Kart"];
+        return emptyOrderCell;
+    }
+    else
+    {
+        ELLineItemTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:LineCellIdentifier];
+        if (!cell)
+        {
+            cell = [[ELLineItemTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:LineCellIdentifier];
         }
         if (indexPath.row % 2 == 0) cell.backgroundColor = [UIColor clearColor];
         else    cell.backgroundColor = [UIColor colorWithRed:.9 green:.9 blue:.9 alpha:.35];
-        
         cell.lineItem = [self.order.lineItemsArray objectAtIndex:indexPath.row];
-        
-        // Configure the cell...
-        
         return cell;
     }
-    
-    UITableViewCell *emptyOrderCell = [tableView dequeueReusableCellWithIdentifier:@"emptyOrderCell"];
-    if (!emptyOrderCell) {
-        emptyOrderCell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"emptyOrderCell"];
-        [emptyOrderCell shineOnRepeatWithInterval:5];
-    }
-    emptyOrderCell.textLabel.textColor = ICON_BLUE_SOLID;
-    emptyOrderCell.textLabel.font =[UIFont fontWithName:MY_FONT_1 size:15];
-    emptyOrderCell.textLabel.text = [NSString stringWithFormat:@"No Items in Kart"];
-    
-    return emptyOrderCell;
     
 }
 
@@ -305,25 +333,32 @@
 {
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
     if (!self.order.lineItemsArray.count) return;
-    
-    if (indexPath.section){
-        ELPaymentViewController *payVC =[[ELPaymentViewController alloc]init];
-        payVC.order = self.order;
-        [self.navigationController pushViewController:payVC animated:YES];
+    if (indexPath.section == 1)
+    {
+        ;
+        if (![PFAnonymousUtils isLinkedWithUser:[[ELUserManager sharedUserManager]currentUser]] && ![[[ELUserManager sharedUserManager]currentUser][@"emailVerified"] boolValue]) {
+            [[[ELUserManager sharedUserManager]currentUser] fetchInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+                
+            }];
+            self.verifyEmailAlertView = [[UIAlertView alloc]initWithTitle:@"Error" message:@"You haven't verified your email address associated with your account." delegate:self cancelButtonTitle:@"Close" otherButtonTitles:@"Resend",nil];
+            [self.verifyEmailAlertView show];
+            return;
+        }
+        ELPaymentSelectViewController *vc = [ELPaymentSelectViewController new];
+        vc.order = self.order;
+        [self.navigationController pushViewController:vc animated:YES];
         return;
     }
     if (indexPath.row == self.currentSelectedTableViewCellRow) self.currentSelectedTableViewCellRow = -1;
     else self.currentSelectedTableViewCellRow = indexPath.row;
     
     [tableView beginUpdates];
-//    [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
     [tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationAutomatic];
     [tableView endUpdates];
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
     [cell shine];
 }
-
 
 
 @end

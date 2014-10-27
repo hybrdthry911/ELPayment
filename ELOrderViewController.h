@@ -10,7 +10,7 @@
 #import "ELOrder.h"
 #import "ELPaymentViewController.h"
 #import "ELLineItemTableViewCell.h"
-@interface ELOrderViewController : ELViewController <UITableViewDataSource, UITableViewDelegate>
+@interface ELOrderViewController : ELViewController <UITableViewDataSource, UITableViewDelegate, UIAlertViewDelegate>
  @property (strong, nonatomic) ELOrder *order;
 -(void)collapseViews;
 @end

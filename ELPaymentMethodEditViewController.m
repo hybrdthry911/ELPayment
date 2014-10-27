@@ -58,6 +58,7 @@
     
     self.scrollView = [[UIScrollView alloc]init];
     self.scrollView.backgroundColor = [[UIColor whiteColor]colorWithAlphaComponent:.9];
+    self.scrollViewToKeyBoardAdjust = self.scrollView;
     [self.view addSubview:self.scrollView];
     
     if (self.card)
@@ -92,7 +93,6 @@
         [self.expButton addTarget:self action:@selector(expButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
         [self.scrollView addSubview:self.expButton];
         [self updateExpButtonText];
-        
     }
 
     
@@ -112,11 +112,13 @@
     self.addressLine2TextField.required = NO;
     self.addressLine2TextField.layer.borderColor = [[UIColor grayColor]CGColor];
     [self.scrollView addSubview:self.addressLine2TextField];
+    
     self.addressCityTextField = [self addNewTextField];
     self.addressCityTextField.attributedPlaceholder = [self textFieldPlaceHolderWithString:@"City"];
     self.addressCityTextField.required = YES;
     self.addressCityTextField.layer.borderColor = [[UIColor grayColor]CGColor];
     [self.scrollView addSubview:self.addressCityTextField];
+    
     self.addressZipCodeTextField = [self addNewTextField];
     self.addressZipCodeTextField.attributedPlaceholder = [self textFieldPlaceHolderWithString:@"Zip Code"];
     self.addressZipCodeTextField.keyboardType = UIKeyboardTypeNumberPad;
@@ -171,13 +173,12 @@
     
     [super viewWillLayoutSubviews];
     
-    
-    if (self.card) self.title = [NSString stringWithFormat:@"%@:%@",self.card.brand,self.card.last4];
-    
-    self.scrollView.frame = self.view.bounds;
-    self.scrollView.contentSize = CGSizeMake(self.view.bounds.size.width, ROW_OFFSET * 6);
+    if (self.card) self.title = [NSString stringWithFormat:@"%@:%@",self.card.brand,self.card.dynamicLast4?self.card.dynamicLast4:self.card.last4];
     
     float offset = self.card ? 0: (1.2);
+    
+    self.scrollView.frame = self.view.bounds;
+    self.scrollView.contentSize = CGSizeMake(self.view.bounds.size.width, ROW_OFFSET * ((self.makeDefaultButton?7.5:6.5)+offset));
     
     [UIView animateWithDuration:.25 animations:
      ^{
@@ -193,6 +194,7 @@
      }
                      completion:^(BOOL finished)
      {
+         
      }];
 }
 - (void)customerDownloadComplete:(NSNotification *)notification{
@@ -267,66 +269,21 @@
 }
 - (void)populateCityState{
     
-    NSString *strRequestParams = [NSString stringWithFormat:@"http://maps.googleapis.com/maps/api/geocode/json?address=&components=postal_code:%@&sensor=false",self.addressZipCodeTextField.text];
-    strRequestParams = [strRequestParams stringByAddingPercentEscapesUsingEncoding:NSStringEncodingConversionExternalRepresentation];
-    NSURL *url = [NSURL URLWithString:strRequestParams];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
-    [request setHTTPMethod:@"GET"];
-    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-        if (connectionError || !data) {
-            return;
-        }
-        NSDictionary *addressDict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-        NSArray *results = addressDict[@"results"];
-        if (!results.count) return;
-        NSDictionary *addressDict2 = results[0];
-        NSArray *addressComponents = addressDict2[@"address_components"];
-        // *addComps = results[0];
-        BOOL valid = NO;
-        for (NSDictionary *dictionary in addressComponents)
+    [self retrieveCityStateFromZipcode:self.addressZipCodeTextField.text completion:^(NSString *city, NSString *state, NSError *error) {
+        for (NSString *string in self.stateArray)
         {
-            NSArray *typesArray = dictionary[@"types"];
-            for (NSString *string in typesArray)
+            if ([state isEqualToString:self.stateString])
             {
-                if ([string isEqualToString:@"country"] && [dictionary[@"short_name"] isEqualToString:@"US"]) valid = YES;
+                [self.statePickerView selectRow:[self.stateArray indexOfObject:string] inComponent:0 animated:YES];
+                self.stateButton.layer.borderColor = ICON_BLUE_SOLID.CGColor;
+                break;
             }
         }
-        if (valid) {
-            NSString *city = nil;
-            for (NSDictionary *dictionary in addressComponents)
-            {
-                NSArray *typesArray = dictionary[@"types"];
-                for (NSString *string in typesArray) {
-                    if ([string isEqualToString:@"administrative_area_level_1"]){
-                        self.stateString = dictionary[@"short_name"];
-                        self.stateButton.layer.borderColor = ICON_BLUE_SOLID.CGColor;
-                        [self.stateButton setTitle:self.stateString forState:UIControlStateNormal];
-                        for (NSString *string in self.stateArray)
-                        {
-                            if ([string isEqualToString:self.stateString]) {
-                                [self.statePickerView selectRow:[self.stateArray indexOfObject:string] inComponent:0 animated:YES];
-                                self.statePickerView.layer.borderColor = ICON_BLUE_SOLID.CGColor;
-                                break;
-                            }
-                        }
-                    }
-                    else if([string isEqualToString:@"sublocality"]){
-                        self.addressCityTextField.layer.borderColor = ICON_BLUE_SOLID.CGColor;
-                        self.addressCityTextField.text =dictionary[@"short_name"];
-                        city = string;
-                    }
-                    else if([string isEqualToString:@"locality"] && !city)
-                    {
-                        self.addressCityTextField.text =dictionary[@"short_name"];
-                        self.addressCityTextField.layer.borderColor = ICON_BLUE_SOLID.CGColor;
-                    }
-                    else if([string isEqualToString:@"administrative_area_level_3"]){
-                        self.addressCityTextField.text =dictionary[@"short_name"];
-                        self.addressCityTextField.layer.borderColor = ICON_BLUE_SOLID.CGColor;
-                    }
-                }
-            }
-        }
+        self.stateString = state;
+        [self.stateButton setTitle:state];
+        self.addressCityTextField.layer.borderColor = ICON_BLUE_SOLID.CGColor;
+        self.addressCityTextField.text = city;
+        
         [self textFieldDidChange:nil];
     }];
 }
@@ -339,12 +296,12 @@
 
 
 #pragma mark Action Methods
--(IBAction)handleViewTap:(id)sender{
+- (IBAction)handleViewTap:(id)sender{
     [super handleViewTap:sender];
     [self hideExpPickerView];
     [self hideStatePickerView];
 }
--(IBAction)expButtonPressed:(id)sender{
+- (IBAction)expButtonPressed:(id)sender{
     if (self.currentTextField) {
         [self.currentTextField resignFirstResponder];
         self.currentTextField = nil;
@@ -435,8 +392,12 @@
         card.expMonth = self.card.expMonth;
         card.expYear = self.card.expYear;
         [ELCard updateCard:card customerId:[[ELUserManager sharedUserManager]currentCustomer].identifier completionHandler:^(ELCard *card, NSError *error) {
-            if (!error && card) {
+            if (!error && card)
+            {
                 self.card = card;
+                UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Success" message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
+                [myAlert show];
+                [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:1];
             }
             else{
                 UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:@"Invalid Credit Card Information" delegate:nil cancelButtonTitle:nil otherButtonTitles:nil];
@@ -466,7 +427,7 @@
     }
     [self checkForSave];
 }
--(void)checkForSave{
+- (void)checkForSave{
     if (((!self.card && self.validCC)|| self.card)
         &&
         (self.nameTextField.text.length
@@ -483,6 +444,7 @@
         self.saveButton = nil;
     }
 }
+
 #pragma mark TextField Methods
 - (ELTextField *)addNewTextField{
     ELTextField *textField = [super addNewTextField];
@@ -589,11 +551,11 @@
      }];
 }
 - (void)showStatePickerView{
-    if (self.currentTextField) {
+    if (self.currentTextField)
+    {
         [self.currentTextField resignFirstResponder];
         self.currentTextField = nil;
     }
-    
     [UIView animateWithDuration:.3 animations:
      ^{
          self.statePickerView.hidden = NO;
@@ -602,6 +564,7 @@
      }
                      completion:^(BOOL finished)
      {
+         
      }];
 }
 - (void)hideStatePickerView{

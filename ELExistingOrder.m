@@ -24,9 +24,10 @@
 
 @implementation ELExistingOrder
 
-@dynamic email, stripeChargeIdentifier, billingInformation, status, stripeCustomerId, shippingCarrier, trackingNumber, shipping, orderNumber, subTotal, total, amountRefunded, discount, tax, customer, lineItems, notes, cardId, ipAddress, fingerprint;
+@dynamic email, stripeChargeIdentifier, billingInformation, status, stripeCustomerId, shippingCarrier, trackingNumber, shipping, orderNumber, subTotal, total, amountRefunded, discount, tax, customer, lineItems, notes, cardId, ipAddress, fingerprint,phoneNumber, stripeCardId, shippingInformation;
  @synthesize stripeCustomer = _stripeCustomer;
  @synthesize card = _card;
+// @synthesize phoneNumber = _phoneNumber;
 
 +(NSString *)parseClassName
 {
@@ -73,7 +74,9 @@
                        withParameters:@{
                                         }
                                 block:^(id object, NSError *error) {
-        handler([object intValue],error);
+                                    int orderNumber = -1;
+                                    if (object) orderNumber = [object intValue];
+        handler(orderNumber,error);
     }];
 }
 -(void)sendMessage:(NSString *)message toCustomerWithCompletion:(PFBooleanResultBlock)handler{

@@ -7,9 +7,10 @@
 //
 
 #import "ELPaymentHeader.h"
-
+#import "UINavigationController+addOns.h"
 @interface ELExistingOrderViewController()
-@property (strong, nonatomic) NSArray *lineItems;
+    @property (strong, nonatomic) NSArray *lineItems;
+ @property (strong, nonatomic) UIBarButtonItem *loginButton;
 @end
 
 
@@ -22,13 +23,48 @@
     self.view.backgroundColor = [[UIColor whiteColor]colorWithAlphaComponent:.95];
     self.tableView.separatorColor = [UIColor clearColor];
     if (!self.lineItems) [self showActivityView];
-    
+        [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(userLoggedIn:) name:elNotificationLoginSucceeded object:nil];
+    if (self.popToRootWhenBackButtonPressed && [PFAnonymousUtils isLinkedWithUser:[[ELUserManager sharedUserManager]currentUser]]) {
+        self.loginButton = [[UIBarButtonItem alloc]initWithTitle:@"Create Account" style:UIBarButtonItemStyleDone target:self action:@selector(handleLoginButtonPress:)];
+        self.navigationItem.rightBarButtonItem = self.loginButton;
+    }
+}
+-(IBAction)handleLoginButtonPress:(id)sender
+{
+    ELLoginViewController *vc = [ELLoginViewController new];
+    vc.createOnly = YES;
+    [self.navigationController pushViewController:vc animated:YES];
+}
+-(void)userLoggedIn:(NSNotification *)notification
+{
+    self.navigationItem.rightBarButtonItem = nil;
 }
 
 -(void)setOrder:(ELExistingOrder *)order
 {
     _order = order;
-    [_order fetchInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+    if (!_order.isDataAvailable) {
+        [_order fetchInBackgroundWithBlock:^(PFObject *object, NSError *error) {
+            self.title = [NSString stringWithFormat:@"Order Number:%@",self.order.orderNumber];
+            PFQuery *query = self.order.lineItems.query;
+            [query includeKey:@"product"];
+            [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                if (!error) {
+                    self.lineItems = objects;
+                    [self.tableView reloadData];
+                    [self hideActivityView];
+                }
+            }];
+            [ELCard retrieveCardWithId:self.order.cardId customerId:self.order.stripeCustomerId completionHandler:^(ELCard *card, NSError *error) {
+                if (!error && card.identifier)
+                {
+                    self.order.card = card;
+                    [self.tableView reloadData];
+                }
+            }];
+        }];
+    }
+    else{
         self.title = [NSString stringWithFormat:@"Order Number:%@",self.order.orderNumber];
         PFQuery *query = self.order.lineItems.query;
         [query includeKey:@"product"];
@@ -46,7 +82,8 @@
                 [self.tableView reloadData];
             }
         }];
-    }];
+        
+    }
 }
 
 #pragma mark - Table view data source
@@ -56,6 +93,7 @@
         case elExistingOrderIndexLineItems:
         case elExistingOrderIndexTracking:
         case elExistingOrderIndexShippingInformation:
+        case elExistingOrderIndexBillingInformation:
             return 20;
             break;
         default:
@@ -79,6 +117,13 @@
         [label makeMine2];
         label.textAlignment = NSTextAlignmentCenter;
         label.text = @"Shipping Information:";
+        return label;
+    }
+    if (section == elExistingOrderIndexBillingInformation) {
+        UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, tableView.bounds.size.width, 15)];
+        [label makeMine2];
+        label.textAlignment = NSTextAlignmentCenter;
+        label.text = @"Billing Information:";
         return label;
     }
     
@@ -127,9 +172,6 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     // Return the number of rows in the section.
     switch (section) {
-        case elExistingOrderIndexStatus:
-            return 1;
-            break;
         case elExistingOrderIndexLineItems:
             return self.lineItems.count;
             break;
@@ -157,6 +199,13 @@
         }
             break;
         case elExistingOrderIndexShippingInformation:
+        {
+            return [self.order.shippingInformation
+                    sizeWithFont:[UIFont fontWithName:MY_FONT_1 size:15]
+                    constrainedToSize:CGSizeMake(self.tableView.bounds.size.width/2-10, 500)].height+10;
+        }
+            break;
+        case elExistingOrderIndexBillingInformation:
         {
             return [self.order.billingInformation
                     sizeWithFont:[UIFont fontWithName:MY_FONT_1 size:15]
@@ -287,7 +336,7 @@
                 amountCell = [[ELAmountTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ccIdentifier];
             }
             amountCell.amountTypeLabel.text = [NSString stringWithFormat:@"%@ Ending In:",self.order.card.brand];
-            amountCell.amountLabel.text = [NSString stringWithFormat:@"%@",self.order.card.last4];
+            amountCell.amountLabel.text = [NSString stringWithFormat:@"%@",self.order.card.dynamicLast4?self.order.card.dynamicLast4:self.order.card.last4];
             cell = amountCell;
         }
             break;
@@ -317,8 +366,23 @@
                 cell.textLabel.textAlignment = NSTextAlignmentLeft;
                 cell.textLabel.numberOfLines = 0;
             }
+            cell.textLabel.text = [NSString stringWithFormat:@"%@",self.order.shippingInformation];
+        }
+            break;
+        case elExistingOrderIndexBillingInformation:
+        {
+            static NSString *BillingIdentifier = @"BillingInformationCell";
+            cell = [tableView dequeueReusableCellWithIdentifier:BillingIdentifier];
+            if (!cell) {
+                cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:BillingIdentifier];
+                cell.textLabel.textColor = ICON_BLUE_SOLID;
+                cell.textLabel.adjustsFontSizeToFitWidth = YES;
+                cell.textLabel.numberOfLines = 1;
+                cell.textLabel.font =[UIFont fontWithName:MY_FONT_1 size:15];
+                cell.textLabel.textAlignment = NSTextAlignmentLeft;
+                cell.textLabel.numberOfLines = 0;
+            }
             cell.textLabel.text = [NSString stringWithFormat:@"%@",self.order.billingInformation];
-
         }
             break;
         default:
@@ -366,4 +430,11 @@
     }
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
 }
+-(BOOL)navigationShouldPopOnBackButton
+{
+    
+    if (self.popToRootWhenBackButtonPressed) [self.navigationController popToRootViewControllerAnimated:YES];
+    return YES;
+}
+
 @end

@@ -23,8 +23,7 @@
 @end
 
 @implementation ELCustomerAccountSettingsViewController
--(void)viewDidLoad
-{
+-(void)viewDidLoad{
     [super viewDidLoad];
     
     self.scrollView = [[UIScrollView alloc]init];
@@ -67,8 +66,7 @@
     [self placeView:self.phoneNumberTextField withOffset:ELViewXOffsetNone width:ELViewWidthFull offset:1];
     [self placeView:self.changePasswordButton withOffset:ELViewXOffsetNone width:ELViewWidthFull offset:2];
 }
--(void)textFieldDidChange:(ELTextField *)textField
-{
+-(void)textFieldDidChange:(ELTextField *)textField{
     if (textField.text.length) textField.layer.borderColor = ICON_BLUE_SOLID.CGColor;
     else textField.layer.borderColor =   textField.required ?  [[UIColor redColor] colorWithAlphaComponent:1].CGColor:[[UIColor grayColor] colorWithAlphaComponent:.65].CGColor;
 
@@ -86,29 +84,24 @@
     if (self.validForSave) [self showSaveButton];
     else [self hideSaveButton];
 }
--(BOOL)validForSave
-{
+-(BOOL)validForSave{
     NSLog(@"simple:%@",[self simple:self.phoneNumberTextField.text]);
     NSCharacterSet *numericOnly = [NSCharacterSet decimalDigitCharacterSet];
     NSCharacterSet *myStringSet = [NSCharacterSet characterSetWithCharactersInString:[self simple:self.phoneNumberTextField.text]];
     return ([self validateEmail:[self.emailTextField.text lowercaseString]] && [self simple:self.phoneNumberTextField.text].length >= 10 && [numericOnly isSupersetOfSet: myStringSet]);
     
 }
--(void)hideSaveButton
-{
+-(void)hideSaveButton{
     self.navigationItem.rightBarButtonItem = nil;
 }
--(void)showSaveButton
-{
+-(void)showSaveButton{
     self.navigationItem.rightBarButtonItem = self.saveButton;
 }
--(IBAction)changePasswordButtonPressed:(id)sender
-{
+-(IBAction)changePasswordButtonPressed:(id)sender{
     ELChangePasswordViewController *vc = [[ELChangePasswordViewController alloc]init];
     [self.navigationController pushViewController:vc animated:YES];
 }
--(IBAction)saveButtonPressed:(id)sender
-{
+-(IBAction)saveButtonPressed:(id)sender{
     if (![self validForSave]) return;
     
     [[ELUserManager sharedUserManager]verifyPasswordWithComletion:^(BOOL verified, NSError *error) {
@@ -134,7 +127,7 @@
                 customer.email = [self.emailTextField.text lowercaseString];
             }
             customer.descriptor = self.phoneNumberTextField.text;
-            [ELCustomer updateStripeCustomer:customer completionHandler:^(ELCustomer *customer, NSError *error)
+            [ELCustomer updateCustomer:customer completionHandler:^(ELCustomer *customer, NSError *error)
             {
                 if (error) {
                     NSLog(@"error:%@",error);
@@ -147,8 +140,7 @@
     }];
     
 }
--(void)attemptToHideActivity
-{
+-(void)attemptToHideActivity{
     if (self.userSaved && self.customerSaved) {
         self.userSaved = NO;
         self.customerSaved = NO;

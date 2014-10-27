@@ -8,8 +8,14 @@
 #ifndef OrderManager_ELPaymentHeader_h
 #define OrderManager_ELPaymentHeader_h
 #import <UIKit/UIKit.h>
+#import <AddressBook/AddressBook.h>
 #import "ELStripeHeader.h"
+#import "ELPaymentBillingViewController.h"
 #import "Stripe+ApplePay.h"
+#import "ELShippingAddress.h"
+#import "ELShippingMethodViewController.h"
+#import "ELShippingSelectViewController.h"
+#import "ELPaymentShippingViewController.h"
 #import "STPTestPaymentAuthorizationViewController.h"
 #import "ELView.h"
 #import "ELViewController.h"
@@ -17,6 +23,7 @@
 #import "ELStripeHeader.h"
 #import "ELAmountTableViewCell.h"
 #import "ELCategory.h"
+#import "ELPaymentSummaryViewController.h"
 #import "ELChangePasswordViewController.h"
 #import "ELCompleteSummaryView.h"
 #import "ELCustomerAccountSettingsViewController.h"
@@ -46,7 +53,7 @@
 #import "ELTrackingViewController.h"
 #import "ELUserManager.h"
 #import "ELVerifyPasswordView.h"
-
+#import "ELPaymentSelectViewController.h"
 #import "UIButton+Addons.h"
 #import "UILabel+addOns.h"
 #import "UINavigationController+addOns.h"

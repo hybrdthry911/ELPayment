@@ -9,6 +9,7 @@
 #import "Postmaster.h"
 #import "Shipment.h"
 #import "RateResult.h"
+#import "ELViewController.h"
 #define USPS_ACCOUNT_ID @"305ENOUG1715"
 #define USPS_ORIGIN_ZIP @"01013"
 #define USPS_BASE_URL @"http://production.shippingapis.com/ShippingAPI.dll"
@@ -17,8 +18,6 @@
  @property (strong, nonatomic) PFUser *currentUser;
  @property BOOL shippingCalcInProgress;
  @property (strong, nonatomic) NSString *originZipCode;
- @property (strong, nonatomic) NSNumber *shippingBuffer;
-
 @end
 
 @implementation ELOrder
@@ -32,15 +31,19 @@
     
     if (self)
     {
-        PFObject *admin = [PFObject objectWithoutDataWithClassName:@"Admin" objectId:@"8ccVy8M7nS"];
-        [admin fetchInBackgroundWithBlock:^(PFObject *object, NSError *error) {
-            self.shippingBuffer = object[@"shippingBuffer"];
-            self.originZipCode = object[@"shipFromZipCode"];
+        self.shipping = @0;
+        self.tax = @0;
+        [PFConfig getConfigInBackgroundWithBlock:^(PFConfig *config, NSError *error) {
+            self.shippingBuffer = config[@"shippingBuffer"];
+            self.originZipCode = config[@"shipFromZipCode"];
+            self.shipFromState = config[@"shipFromState"];
+            self.taxRate = config[@"taxRate"];
         }];
         self.shippingCalcInProgress = NO;
         self.orderStatus = elOrderStatusNotReadyForCharge;
         [self customerDownloadComplete:nil];
         self.card = self.customer.defaultCard;
+
     }
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(customerDownloadComplete:) name:elNotificationCustomerDownloadComplete object:nil];
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(orderChanged:) name:@"orderChanged" object:nil];
@@ -50,21 +53,29 @@
 }
 -(void)clearOrder
 {
-    self.shipping = nil;
+    self.shipping = @0;
+    self.tax = @0;
+    self.total = @0;
     self.shippingRates = nil;
     self.lineItemsArray = [NSMutableArray array];
     self.zipCode = nil;
     self.orderStatus = elOrderStatusNotReadyForCharge;
     self.shippingCalcInProgress = NO;
     self.charge = nil;
-    self.cheapestShipmentCarrier = nil;
+    self.shippingCarrier = nil;
     self.pfObjectRepresentation = nil;
     [[NSNotificationCenter defaultCenter]postNotificationName:@"orderChanged" object:self];
+}
+-(void)setZipCode:(NSString *)zipCode{
+    _zipCode = zipCode;
+    self.shippingCarrier = nil;
+    self.shippingRates = nil;
+    self.shipping = @0;
 }
 -(void)orderChanged:(NSNotification *)notification
 {
     self.shipping = nil;
-    self.cheapestShipmentCarrier = nil;
+    self.shippingCarrier = nil;
 }
 -(void)userLoggedOut:(NSNotification *)notification
 {
@@ -92,7 +103,6 @@
         return NO;
     }
     if (!self.card && !self.zipCode){
-        
         return NO;
     }
     self.shipping = nil;
@@ -106,12 +116,28 @@
     [ELShipment ratesInBackground:message completionHandler:^(RateResult *result, NSError *error)
      {
         if (!error) {
-            if (result.rates)
+            if (result.rates.count)
             {
-                self.shippingRates = result.rates;
-                self.shipping = @(floorf((result.rate.charge.intValue / 100.0 * (self.shippingBuffer.floatValue + 1)*100+.5))/100);
-                self.cheapestShipmentCarrier = [result.rate.carrier uppercaseString];
+                for (Rate *rate in result.rates) {
+                    rate.charge = [NSString stringWithFormat:@"%.2f",floorf((rate.charge.intValue / 100.0 * (self.shippingBuffer.floatValue + 1)*100+.5))/100];
+                }
+                
+                self.shippingRates = [result.rates sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+                    
+                    Rate *rate1 = obj1;
+                    Rate *rate2 = obj2;
+                    if ( rate1.charge.floatValue < rate2.charge.floatValue ) {
+                        return (NSComparisonResult)NSOrderedAscending;
+                    } else if ( rate1.charge.floatValue > rate2.charge.floatValue ) {
+                        return (NSComparisonResult)NSOrderedDescending;
+                    }
+                    return (NSComparisonResult)NSOrderedSame;
+                }];
+                Rate *rate = self.shippingRates[0];
+                self.shipping = @(rate.charge.floatValue);
+                self.shippingCarrier = [rate.carrier uppercaseString];
                 self.shippingCalcInProgress = NO;
+                [[NSNotificationCenter defaultCenter]postNotificationName:@"shippingCalculated" object:self];
                 handler(self.orderStatus,error);
             }
             else handler(self.orderStatus, errorFromELErrorType(elErrorCodeNoShipping));
@@ -121,6 +147,23 @@
     }];
     return YES;
 }
+-(void)setShippingRate:(Rate *)rate
+{
+    self.shipping = @(rate.charge.floatValue);
+    self.shippingCarrier = [rate.carrier uppercaseString];
+}
+-(NSArray *)shippingMethods
+{
+    NSMutableArray *array = [NSMutableArray new];
+    for (Rate *rate in self.shippingRates) {
+        PKShippingMethod *shippingMethod = [PKShippingMethod new];
+        shippingMethod.label = [rate.carrier uppercaseString];
+        shippingMethod.amount = [NSDecimalNumber decimalNumberWithString:[NSString stringWithFormat:@"%.2f",floorf((rate.charge.intValue / 100.0 * (self.shippingBuffer.floatValue + 1)*100+.5))]];
+        shippingMethod.detail = rate.service;
+        [array addObject:shippingMethod];
+    }
+    return array;
+}
 -(NSNumber *)weight
 {
     float weight = 0;
@@ -128,7 +171,12 @@
         weight += lineItem.weight.floatValue;
     }
     return @(weight);
+}
+-(NSNumber *)tax
+{
+    if ([self.shipFromState isEqualToString:self.shipToState]) return [NSNumber numberWithFloat:self.subTotal.floatValue * (self.taxRate.floatValue/100)];
     
+    return @0;
 }
 -(ELLineItem *)doesOrderContainProduct:(ELProduct *)product
 {
@@ -153,7 +201,7 @@
     
     if (self.orderStatus == elOrderStatusChargeSucceeded || self.orderStatus == elOrderStatusComplete) [self clearOrder];
     self.shipping = nil;
-    self.cheapestShipmentCarrier = nil;
+    self.shippingCarrier = nil;
     if (!product.sku || quantity == 0 || !product.salePrice || product.salePrice.doubleValue <= 0) {
         UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:@"Can't add pump to cart. If you need help with this product/order please call E-Nough Logic at 413-206-9184" delegate:self cancelButtonTitle:@"Close" otherButtonTitles:@"Call",nil];
         myAlert.delegate = self;
@@ -228,7 +276,7 @@
         return;
     }
     self.shipping = nil;
-    self.cheapestShipmentCarrier = nil;
+    self.shippingCarrier = nil;
     if (!product.sku || quantity == 0 || !product.salePrice || product.salePrice.doubleValue <= 0) {
         UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:@"Can't add pump to cart. If you need help with this product/order please call E-Nough Logic at 413-206-9184" delegate:self cancelButtonTitle:@"Close" otherButtonTitles:@"Call",nil];
         myAlert.delegate = self;
@@ -370,14 +418,14 @@
                     }
                     else
                     {
-                        
                         self.orderStatus = elOrderStatusComplete;
                         [ELCustomer retrieveCustomerWithID:self.customer.identifier completion:^(ELCustomer *customer, NSError *error) {
                             if (customer && !error) self.customer = customer;
                             else NSLog(@"%@",error);
                         }];
                         PFUser *currentUser = [[ELUserManager sharedUserManager]currentUser];
-                        if (currentUser && self.customer.identifier && self.customer.email) {
+                        if (currentUser && self.customer.identifier && self.customer.email)
+                        {
                             currentUser[@"stripeID"] = self.customer.identifier;
                             currentUser[@"lastPurchaseEmail"] = self.customer.email;
                             [currentUser saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
@@ -411,50 +459,79 @@
         }
 
 
-        ELExistingOrder *orderObject = [ELExistingOrder object];
-
-        orderObject.total = @(self.charge.amountInCents.integerValue/100.0);
-        orderObject.billingInformation = [NSString stringWithFormat:@"%@\n%@%@\n%@, %@ %@\n%@\n%@",
-                                              self.card.name,
-                                              self.card.addressLine1,
-                                              self.card.addressLine2.length?[NSString stringWithFormat:@"\n%@",self.card.addressLine2]:@"",
-                                              self.card.addressCity,
-                                              self.card.addressState,
-                                              self.card.addressZip,
-                                              self.customer.email,
+        self.pfObjectRepresentation = [ELExistingOrder object];
+        self.pfObjectRepresentation.total = @(self.charge.amountInCents.integerValue/100.0);
+        self.pfObjectRepresentation.billingInformation = [[self.card billingAddress] stringByAppendingFormat:@"\n%@\n%@",self.customer.email,
                                               self.customer.descriptor];
-
-        
-        orderObject.customer = [[ELUserManager sharedUserManager]currentUser];
-        if (self.subTotal) orderObject.subTotal = self.subTotal;
-        if (self.tax)        orderObject.tax = self.tax;
-        if (self.shipping)        orderObject.shipping = self.shipping;
-        orderObject.email = self.customer.email;
-        orderObject.stripeCustomerId = self.customer.identifier;
-        orderObject.stripeChargeIdentifier = self.charge.identifier;
-        orderObject.status = @"Processing";
-        orderObject.shippingCarrier = self.cheapestShipmentCarrier;
-        orderObject.cardId = self.card.identifier;
-        orderObject.fingerprint = self.card.fingerprint;
+        self.pfObjectRepresentation.shippingInformation = self.shippingAddress.addressString;
+        self.pfObjectRepresentation.customer = [[ELUserManager sharedUserManager]currentUser];
+        if (self.subTotal) self.pfObjectRepresentation.subTotal = self.subTotal;
+        if (self.tax)        self.pfObjectRepresentation.tax = self.tax;
+        if (self.shipping)        self.pfObjectRepresentation.shipping = self.shipping;
+        self.pfObjectRepresentation.email = self.customer.email;
+        self.pfObjectRepresentation.stripeCustomerId = self.customer.identifier;
+        self.pfObjectRepresentation.stripeChargeIdentifier = self.charge.identifier;
+        self.pfObjectRepresentation.stripeCardId = self.charge.card.identifier;
+        self.pfObjectRepresentation.status = @"Processing";
+        self.pfObjectRepresentation.shippingCarrier = self.shippingCarrier;
+        self.pfObjectRepresentation.cardId = self.card.identifier;
+        self.pfObjectRepresentation.fingerprint = self.card.fingerprint;
+        self.pfObjectRepresentation.phoneNumber = self.customer.descriptor;
         [ELExistingOrder localIPAddress:^(NSString *string, NSError *error) {
-            if (string) orderObject.ipAddress = string;
+            if (string) self.pfObjectRepresentation.ipAddress = string;
             for (ELLineItem *lineItemPFObjects in self.lineItemsArray) {
-                [orderObject.lineItems addObject:lineItemPFObjects];
+                [self.pfObjectRepresentation.lineItems addObject:lineItemPFObjects];
             }
             [ELExistingOrder nextOrderNumber:^(int number, NSError *error)
             {
-                orderObject.orderNumber = error? @(-1) : [NSNumber numberWithInt:number];
-                [orderObject saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                self.pfObjectRepresentation.orderNumber = error? @(-1) : [NSNumber numberWithInt:number];
+                [self.pfObjectRepresentation saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
                     
                     if (error)
                     {
-                        [orderObject saveEventually];
-                        handler(orderObject,error);
+                        [self.pfObjectRepresentation saveEventually];
+                        handler(self.pfObjectRepresentation,error);
                         return;
                     }
-                    self.charge.descriptor = orderObject.objectId;
-                    self.pfObjectRepresentation = orderObject;
-                    handler(orderObject,error);
+                    self.charge.descriptor = self.pfObjectRepresentation.objectId;
+                    handler(self.pfObjectRepresentation,error);
+                }];
+                
+                //if shipping address doesn't exist add it.
+                PFRelation *shippingAddressRelation = [[ELUserManager sharedUserManager]currentUser][@"shippingAddresses"];
+                [shippingAddressRelation.query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                    
+                    BOOL found = NO;
+                    for (ELShippingAddress *address in objects) {
+                        if ([address.addressString isEqualToString:self.shippingAddress.addressString]) {
+                            found = YES;
+                        }
+                    }
+                    if (!found) {
+                        [self.shippingAddress saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                            
+                            if (error) [self.shippingAddress saveEventually:^(BOOL succeeded, NSError *error) {
+                                PFRelation *relation = [[ELUserManager sharedUserManager]currentUser][@"shippingAddresses"];
+                                [relation addObject:self.shippingAddress];
+                                [[[ELUserManager sharedUserManager]currentUser] saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                                    if (error) {
+                                        [[[ELUserManager sharedUserManager]currentUser] saveEventually];
+                                    }
+                                }];
+                            }];
+                            else
+                            {
+                                PFRelation *relation = [[ELUserManager sharedUserManager]currentUser][@"shippingAddresses"];
+                                [relation addObject:self.shippingAddress];
+                                [[[ELUserManager sharedUserManager]currentUser] saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                                    if (error) {
+                                        [[[ELUserManager sharedUserManager]currentUser] saveEventually];
+                                    }
+                                }];
+                            }
+                            
+                        }];
+                    }
                 }];
             }];
         }];

@@ -41,7 +41,7 @@
         self.quantityPicker.delegate = self;
         self.quantityPicker.dataSource = self;
         [self.quantityPickerHolderView addSubview:self.quantityPicker];
-        [self.quantityPicker selectRow:self.lineItem.quantity.integerValue inComponent:0 animated:YES];
+        [self.quantityPicker selectRow:self.lineItem.quantity.integerValue inComponent:0 animated:NO];
         
         self.unitPriceLabel = [[UILabel alloc]init];
         self.unitPriceLabel.textColor = ICON_BLUE_SOLID;
@@ -92,8 +92,6 @@
 
     self.quantityPicker.clipsToBounds = YES;
     if ([self.quantityPicker selectedRowInComponent:0] != self.lineItem.quantity.integerValue) [self.quantityPicker selectRow:self.lineItem.quantity.integerValue inComponent:0 animated:YES];
-    
-    
     
     self.unitPriceLabel.bounds = CGRectMake(0, 0, self.contentView.bounds.size.width/2 - 10, 40-10);
     self.unitPriceLabel.center = CGPointMake(self.contentView.bounds.size.width/4, 60);
@@ -151,11 +149,7 @@
     return [NSString stringWithFormat:@"%li",(long)row];
 }
 - (void)pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component{
-  //if (row>0)     [self resetSubtotals];
-    
     self.lineItem.quantity = [NSNumber numberWithInteger:row];
-
-
 }
 
 - (UIView *)pickerView:(UIPickerView *)pickerView viewForRow:(NSInteger)row forComponent:(NSInteger)component reusingView:(UIView *)view{
@@ -179,7 +173,6 @@
     NSMutableAttributedString *attString = [[NSMutableAttributedString alloc] initWithString:title attributes:@{NSForegroundColorAttributeName:ICON_BLUE_SOLID}];
     [attString addAttribute:NSFontAttributeName value:[UIFont fontWithName:@"DS-Digital-Italic" size:10] range:NSMakeRange(0, title.length)];
     return attString;
-    
 }
 
 @end

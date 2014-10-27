@@ -110,11 +110,9 @@
 }
 -(IBAction)cancelButtonSelected:(UIBarButtonItem *)sender
 {
-    if ([self.elDelegate respondsToSelector:@selector(pickerView:cancelledSelectionAtRow:)])
+    if ([self.elDelegate respondsToSelector:@selector(pickerViewCancelled:)])
     {
-        for (int i = 0; i<self.pickerView.numberOfComponents; i++) {
-            [self.elDelegate pickerView:self cancelledSelectionAtRow:[self.pickerView selectedRowInComponent:i]];
-        }
+        [self.elDelegate pickerViewCancelled:self];
     }
 }
 

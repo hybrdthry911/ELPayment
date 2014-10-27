@@ -17,10 +17,11 @@ typedef enum
     ELViewWidthFull, ELViewWidthHalf, ELViewWidthQuarter, ELViewWidthThird
 }ELViewWidth;
 
+typedef void (^ELCityStateCompletionHandler)(NSString *city, NSString *state, NSError *error);
 
 @class ELTextField;
 @interface ELViewController : UIViewController
- @property (strong, nonatomic) UIView *hudProgressView;
+ @property (strong, nonatomic) UIView *hudProgressView, *hudProgressHolderView;
  @property (strong, nonatomic) UILabel *activityLabel;
  @property (strong, nonatomic) UIActivityIndicatorView *activityView;
  @property (strong, nonatomic) UITextField *currentTextField, *currentKeyboardTextField;
@@ -39,6 +40,11 @@ typedef enum
 -(void)showActivityView;
 -(void)hideActivityView;
 -(void)placeView:(UIView *)view withOffset:(ELViewXOffset)xOffset width:(ELViewWidth)width offset:(float)offset;
++ (UIViewController*) topMostController;
+- (void)retrieveCityStateFromZipcode:(NSString *)zipCode completion:(ELCityStateCompletionHandler)handler;
++ (void)retrieveCityStateFromZipcode:(NSString *)zipCode completion:(ELCityStateCompletionHandler)handler;
+-(NSString*) formatPhoneNumber:(NSString*) simpleNumber deleteLastChar:(BOOL)deleteLastChar;
+-(NSString *)simple:(NSString *)string;
 @end
 
 @interface ELTextField : UITextField

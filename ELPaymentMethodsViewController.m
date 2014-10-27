@@ -7,9 +7,10 @@
 //
 
 #import "ELPaymentHeader.h"
-
+#define AUTH_AMOUNT_IN_CENTS [NSNumber numberWithInt:50]
 @interface ELPaymentMethodsViewController()
  @property (strong, nonatomic) UIRefreshControl *refreshControl;
+ @property BOOL paymentRequestInProcess;
 @end
 
 
@@ -52,7 +53,6 @@
     // Return the number of rows in the section.
     return [[ELUserManager sharedUserManager]currentCustomer].cards.count+2;
 }
-
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *CellIdentifier = @"Cell";
@@ -77,7 +77,7 @@
         ELCard *card = [[ELUserManager sharedUserManager]currentCustomer].cards[indexPath.row];
         if ([card.identifier isEqualToString:[[ELUserManager sharedUserManager]currentCustomer].defaultCardId]) cell.accessoryType = UITableViewCellAccessoryCheckmark;
         
-        cell.textLabel.text = [NSString stringWithFormat:@"%@: Ending in %@ ",card.brand, card.last4];
+        cell.textLabel.text = [NSString stringWithFormat:@"%@: Ending in %@ ",card.brand, card.dynamicLast4?card.dynamicLast4:card.last4];
         cell.detailTextLabel.text = [NSString stringWithFormat:@"Exp:%li/%li ",(unsigned long)card.expMonth,(unsigned long)card.expYear];
         // Configure the cell...r
     }
@@ -85,7 +85,7 @@
         cell.backgroundColor = ICON_BLUE_SOLID;
         cell.textLabel.textColor = [UIColor whiteColor];
         cell.detailTextLabel.textColor = [UIColor whiteColor];
-        cell.textLabel.text = @"Add New Payment Method ";
+        cell.textLabel.text = @"Add New Credit/Debit Card";
     }
     else{
         cell.backgroundColor = ICON_BLUE_SOLID;
@@ -108,11 +108,31 @@
  {
      if (editingStyle == UITableViewCellEditingStyleDelete)
      {
-         ELCard *card = [[ELUserManager sharedUserManager]currentCustomer].cards[indexPath.row];
          [self showActivityView];
-         [ELCard deleteCardId:card.identifier fromCustomerId:[[[ELUserManager sharedUserManager]currentCustomer]identifier] completionHandler:^(NSString *identifier, BOOL success, NSError *error) {
-             [[ELUserManager sharedUserManager]fetchCustomer];
+         ELCard *card = [[ELUserManager sharedUserManager]currentCustomer].cards[indexPath.row];
+
+         PFQuery *processingQuery = [ELExistingOrder query];
+         [processingQuery whereKey:@"stripeCardId" equalTo:card.identifier];
+         [processingQuery whereKey:@"status" equalTo:@"Processing"];
+         
+         PFQuery *backorderedQuery = [ELExistingOrder query];
+         [backorderedQuery whereKey:@"stripeCardId" equalTo:card.identifier];
+         [backorderedQuery whereKey:@"status" equalTo:@"Backordered"];
+         PFQuery *query = [PFQuery orQueryWithSubqueries:@[processingQuery,backorderedQuery]];
+         [query countObjectsInBackgroundWithBlock:^(int number, NSError *error) {
+             if (!number)
+             {
+                 [ELCard deleteCardId:card.identifier fromCustomerId:[[[ELUserManager sharedUserManager]currentCustomer]identifier] completionHandler:^(NSString *identifier, BOOL success, NSError *error) {
+                     [[ELUserManager sharedUserManager]fetchCustomer];
+                 }];
+             }
+             else{
+                 UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:@"Order is pending against this card. Try again after order ships." delegate:self cancelButtonTitle:@"Close" otherButtonTitles:nil];
+                 [myAlert show];
+                 [self hideActivityView];
+             }
          }];
+
      }
 }
 
@@ -120,65 +140,20 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
     if (indexPath.row>[[ELUserManager sharedUserManager]currentCustomer].cards.count)
     {
         [self showActivityView];
         if ([[ELUserManager sharedUserManager]passwordSessionActive])
         {
-            
-            PKPaymentRequest *paymentRequest = [ELStripe paymentRequestWithMerchantIdentifier:@"merchant.com.enoughlogic.fuellogic"];
-            
-            paymentRequest.requiredBillingAddressFields = PKAddressFieldAll;
-            paymentRequest.requiredShippingAddressFields = PKAddressFieldAll;
-            paymentRequest.currencyCode = @"USD";
-            PKPaymentSummaryItem *item = [[PKPaymentSummaryItem alloc] init];
-            item.amount = [NSDecimalNumber decimalNumberWithString:@"10.00"];
-            item.label = @"Add Payment method without Charge.";
-            paymentRequest.paymentSummaryItems = @[item];
-            
-            if ([Stripe canSubmitPaymentRequest:paymentRequest])
-            {
-                PKPaymentAuthorizationViewController *paymentController = [[PKPaymentAuthorizationViewController alloc]
-                                     initWithPaymentRequest:paymentRequest];
-                paymentController.delegate = self;
-                UIViewController *topController = [ELPaymentMethodsViewController topMostController];
-                [topController presentViewController:paymentController animated:YES completion:nil];
-            }
-            else
-            {
-                UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
-                [myAlert show];
-                [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:1];
-                [self hideActivityView];
-            }
+            [self presentApplePayAuthorization];
         }
         else
         {
             [[ELUserManager sharedUserManager]verifyPasswordWithComletion:^(BOOL verified, NSError *error) {
                 if (verified)
                 {
-                    PKPaymentRequest *paymentRequest =[ELStripe paymentRequestWithMerchantIdentifier:@"merchant.com.enoughlogic.fuellogic"];
-                    paymentRequest.requiredBillingAddressFields = PKAddressFieldAll;
-                    paymentRequest.requiredShippingAddressFields = PKAddressFieldAll;
-                    paymentRequest.currencyCode = @"USD";
-                    PKPaymentSummaryItem *item = [[PKPaymentSummaryItem alloc] init];
-                    item.amount = [NSDecimalNumber decimalNumberWithString:@"10.00"];
-                    item.label = @"Add Payment method without Charge.";
-                    paymentRequest.paymentSummaryItems = @[item];
-                    if ([Stripe canSubmitPaymentRequest:paymentRequest])
-                    {
-                        PKPaymentAuthorizationViewController *paymentController = [[PKPaymentAuthorizationViewController alloc]
-                                                                                   initWithPaymentRequest:paymentRequest];
-                        paymentController.delegate = self;
-                        UIViewController *topController = [ELPaymentMethodsViewController topMostController];
-                        [topController presentViewController:paymentController animated:YES completion:nil];
-                    }
-                    else{
-                        UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
-                        [myAlert show];
-                        [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:1];
-                        [self hideActivityView];
-                    }
+                    [self presentApplePayAuthorization];
                 }
                 else [self hideActivityView];
             }];
@@ -206,8 +181,8 @@
             }
         }];
     }
-    [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
+
 
 + (UIViewController*) topMostController
 {
@@ -218,47 +193,113 @@
     }
     return topController;
 }
-
-// ViewController.m
-
+-(void)presentApplePayAuthorization
+{
+    PKPaymentRequest *paymentRequest = [ELStripe paymentRequest];
+    paymentRequest.requiredBillingAddressFields = PKAddressFieldAll;
+    //    paymentRequest.requiredShippingAddressFields = PKAddressFieldAll;
+    paymentRequest.currencyCode = @"USD";
+    
+    PKPaymentSummaryItem *item = [[PKPaymentSummaryItem alloc] init];
+    item.amount = [NSDecimalNumber decimalNumberWithString:
+                   [NSString stringWithFormat:@"%.2f",[AUTH_AMOUNT_IN_CENTS floatValue]/100]
+                   ];
+    item.label = @"Temporary Authorization";
+    
+    paymentRequest.paymentSummaryItems = @[item];
+    
+    if ([Stripe canSubmitPaymentRequest:paymentRequest])
+    {
+        PKPaymentAuthorizationViewController *paymentController = [[PKPaymentAuthorizationViewController alloc]
+                                                                   initWithPaymentRequest:paymentRequest];
+        paymentController.delegate = self;
+        UIViewController *topController = [ELPaymentMethodsViewController topMostController];
+        [topController presentViewController:paymentController animated:YES completion:nil];
+    }
+    else
+    {
+        UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
+        [myAlert show];
+        [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:1];
+        [self hideActivityView];
+    }
+    
+    
+}
 - (void)paymentAuthorizationViewController:(PKPaymentAuthorizationViewController *)controller
                        didAuthorizePayment:(PKPayment *)payment
                                 completion:(void (^)(PKPaymentAuthorizationStatus))completion {
-    /*
-     We'll implement this method below in 'Creating a single-use token'.
-     Note that we've also been given a block that takes a
-     PKPaymentAuthorizationStatus. We'll call this function with either
-     PKPaymentAuthorizationStatusSuccess or PKPaymentAuthorizationStatusFailure
-     after all of our asynchronous code is finished executing. This is how the
-     PKPaymentAuthorizationViewController knows when and how to update its UI.
-     */
+    self.paymentRequestInProcess = YES;
     [self handlePaymentAuthorizationWithPayment:payment completion:completion];
+    [controller dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (void)paymentAuthorizationViewControllerDidFinish:(PKPaymentAuthorizationViewController *)controller {
-    [self hideActivityView];
+    if (!self.paymentRequestInProcess) [self hideActivityView];
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
--(void)handlePaymentAuthorizationWithPayment:(PKPayment *)payment completion:(void (^)(PKPaymentAuthorizationStatus))completion{
+-(void)handlePaymentAuthorizationWithPayment:(PKPayment *)payment completion:(void (^)(PKPaymentAuthorizationStatus))completion
+{
     
-    [ELStripe createTokenWithPayment:payment completion:^(STPToken *token, NSError *error) {
-       [[[ELUserManager sharedUserManager]currentCustomer] addToken:token toStripeCustomerWithCompletion:^(ELCustomer *customer, ELCard *card, NSError *error) {
-           if (!error) {
-               UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Success" message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
-               [myAlert show];
-               [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:1];
-               [[ELUserManager sharedUserManager]fetchCustomer];
-           }
-           else{
-               NSLog(@"error:%@",error);
-               UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error Adding Apple Payment Method" message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
-               [myAlert show];
-               [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:1];
-           }
-           [self hideActivityView];
-#warning handle errors here
-           completion(PKPaymentAuthorizationStatusSuccess);
-       }];
+    [ELStripe createTokenWithPayment:payment completion:^(STPToken *token, NSError *error)
+    {
+        if (token && !error)
+        {
+            [[[ELUserManager sharedUserManager]currentCustomer] addToken:token toStripeCustomerWithCompletion:^(ELCustomer *customer, ELCard *card, NSError *error)
+            {
+                if (!error)
+                {
+                    ELCharge *charge = [ELCharge charge];
+                    charge.amountInCents = AUTH_AMOUNT_IN_CENTS;
+                    charge.customer = customer;
+                    charge.customerID = customer.identifier;
+                    charge.currency = @"USD";
+                    charge.capture = NO;
+                    charge.token = token;
+                    [ELCharge createCharge:charge completion:^(ELCharge *charge, NSError *error)
+                    {
+                        if (charge && !error)
+                        {
+                            UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Success" message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
+                            [myAlert show];
+                            [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:1];
+                            ELRefund *refund = [ELRefund new];
+                            refund.charge = charge;
+                            refund.chargeID = charge.identifier;
+                            [refund createRefundCompletionHandler:^(ELRefund *refund, NSError *error) {
+                                self.paymentRequestInProcess = NO;
+                            }];
+                            [[ELUserManager sharedUserManager]fetchCustomer];
+                        }
+                        else{
+                            NSLog(@"error:%@",error);
+                            UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Creating charge failed" message:nil delegate:nil cancelButtonTitle:@"Close"  otherButtonTitles:nil];
+                            [myAlert show];
+                            [self hideActivityView];
+                        }
+                        self.paymentRequestInProcess = NO;
+
+                        
+//                            completion(PKPaymentAuthorizationStatusSuccess);
+                    }];
+                    
+
+                }
+                else{
+                    UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Adding payment to customer failed" message:@"Close" delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
+                    [myAlert show];
+                    self.paymentRequestInProcess = NO;
+                    [self hideActivityView];
+                }
+            }];
+  
+        }
+        else{
+            UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:@"Error creating Token" delegate:self cancelButtonTitle:@"Close" otherButtonTitles:nil];
+            [myAlert show];
+            self.paymentRequestInProcess = NO;
+            [self hideActivityView];
+        }
     }];
 }
 @end

@@ -11,7 +11,7 @@
 
 @protocol ELPickerViewDelegate <NSObject>
 -(void)pickerView:(ELPickerView *)pickerView completedSelectionAtRow:(NSInteger)row;
--(void)pickerView:(ELPickerView *)pickerView cancelledSelectionAtRow:(NSInteger)row;
+-(void)pickerViewCancelled:(ELPickerView *)pickerView;
 @end
 
 @interface ELPickerView : ELView

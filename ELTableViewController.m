@@ -27,8 +27,13 @@
 -(void)viewWillLayoutSubviews
 {
     [super viewWillLayoutSubviews];
+    
+    self.hudProgressHolderView.bounds = CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height);
+    self.hudProgressHolderView.center = CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2);
+    
+    
     self.hudProgressView.bounds = CGRectMake(0, 0, 200, 80);
-    self.hudProgressView.center = CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2);
+    self.hudProgressView.center = CGPointMake(self.hudProgressHolderView.bounds.size.width/2, self.hudProgressHolderView.bounds.size.height/2);
     
     self.activityView.bounds = CGRectMake(0, 0, 50, 50);
     self.activityView.center = CGPointMake(self.hudProgressView.bounds.size.width/2, 30);
@@ -77,13 +82,24 @@
 }
 -(void)showActivityView
 {
-    [self.view addSubview:self.hudProgressView];
+    self.view.userInteractionEnabled = NO;
+    [self.view addSubview:self.hudProgressHolderView];
     [self.activityView startAnimating];
 }
 -(void)hideActivityView
 {
+    self.view.userInteractionEnabled = YES;
     [self.activityView stopAnimating];
-    [self.hudProgressView removeFromSuperview];
+    [self.hudProgressHolderView removeFromSuperview];
+}
+-(UIView *)hudProgressHolderView
+{
+    if (!_hudProgressHolderView) {
+        _hudProgressHolderView = [UIView new];
+        _hudProgressHolderView.userInteractionEnabled = NO;
+        [_hudProgressHolderView addSubview:self.hudProgressView];
+    }
+    return _hudProgressHolderView;
 }
 -(UIView *)hudProgressView
 {

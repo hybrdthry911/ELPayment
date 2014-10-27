@@ -35,6 +35,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+    if ([PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) [self.navigationController popViewControllerAnimated:YES];
     self.currentUser = [[ELUserManager sharedUserManager]currentUser];
     
     self.signUpMode = NO;
@@ -86,19 +88,21 @@
     [self.loginButton makeMine2];
     [self.loginButton setTitle:@"Login"];
     [self.loginButton addTarget:self action:@selector(handleLoginButtonPress:) forControlEvents:UIControlEventTouchUpInside];
-    [self.scrollView addSubview:self.loginButton];
+    if (!self.createOnly) [self.scrollView addSubview:self.loginButton];
     
     self.lostButton  = [[UIButton alloc]init];
     [self.lostButton makeMine2];
     [self.lostButton setTitle:@"Lost Password"];
     [self.lostButton addTarget:self action:@selector(handleLostButtonPress:) forControlEvents:UIControlEventTouchUpInside];
-    [self.scrollView addSubview:self.lostButton];
+    if (!self.createOnly) [self.scrollView addSubview:self.lostButton];
     
     self.signUpButton  = [[UIButton alloc]init];
     [self.signUpButton setTitle:@"New User"];
     [self.signUpButton makeMine];
     [self.signUpButton addTarget:self action:@selector(handleSignUpButtonPress:) forControlEvents:UIControlEventTouchUpInside];
     [self.scrollView addSubview:self.signUpButton];
+    
+    [self handleSignUpButtonPress:self.signUpButton];
     // Do any additional setup after loading the view.
 }
 -(IBAction)handleLostButtonPress:(id)sender
@@ -118,7 +122,8 @@
                 
                 [PFUser logInWithUsernameInBackground:[self.usernameTextField.text lowercaseString] password:self.passwordTextfield.text block:^(PFUser *user, NSError *error)
                  {
-                     if (error) {
+                     if (error)
+                     {
                          [self.currentUser fetch];
                          UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:nil delegate:nil cancelButtonTitle:@"Close" otherButtonTitles:nil];
                          switch (error.code) {
@@ -143,11 +148,12 @@
                          }
                          [myAlert show];
                      }
-                     else{
+                     else
+                     {
                          self.currentUser = user;
                          UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Success" message:nil delegate:nil cancelButtonTitle:nil otherButtonTitles:nil];
                          [myAlert show];
-                         [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:.5];
+                         [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:2];
                          [self.navigationController popViewControllerAnimated:YES];
                          [[NSNotificationCenter defaultCenter]postNotificationName:elNotificationLoginSucceeded object:user];
                      }
@@ -213,10 +219,17 @@
                     user.username = [self.usernameTextField.text lowercaseString];
                     user.password = self.passwordTextfield.text;
                     user.email = [self.emailTextField.text lowercaseString];
+                    
+//                    PFACL *acl = [PFACL ACL];
+//                    [acl setPublicReadAccess:YES];
+//                    [acl setReadAccess:YES forRoleWithName:@"Admin"];
+//                    [acl setWriteAccess:YES forRoleWithName:@"Admin"];
+//                    [user setACL:acl];
+//                    
                     [user signUpInBackgroundWithBlock:^(BOOL succeeded, NSError *error)
                     {
-                        
-                        if (error) {
+                        if (error)
+                        {
                             [self.currentUser fetch];
                             UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:nil delegate:nil cancelButtonTitle:@"Close" otherButtonTitles:nil];
                             switch (error.code) {
@@ -237,12 +250,26 @@
                             }
                             [myAlert show];
                         }
-                        else{
-                            UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Success" message:nil delegate:nil cancelButtonTitle:nil otherButtonTitles:nil];
+                        else
+                        {
+                            UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Success" message:[NSString stringWithFormat:@"A verification e-mail has been sent to %@",self.currentUser.email] delegate:nil cancelButtonTitle:nil otherButtonTitles:nil];
                             [myAlert show];
                             [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:.5];
                             [self.navigationController popViewControllerAnimated:YES];
                             [[NSNotificationCenter defaultCenter]postNotificationName:elNotificationLoginSucceeded object:[[ELUserManager sharedUserManager]currentUser]];
+                            
+                            if (!user[@"stripeID"])
+                            {
+                                ELCustomer *startingcustomer = [ELCustomer customer];
+                                startingcustomer.email = user.email;
+                                startingcustomer.currency = @"usd";
+                                [ELCustomer createCustomer:startingcustomer completionHandler:^(ELCustomer *customer, NSError *error) {
+                                    user[@"stripeID"] = customer.identifier;
+                                    [user saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                                        if (error || !succeeded) [user saveEventually];
+                                    }];
+                                }];
+                            }
                         }
                         [self hideActivityView];
                     }];

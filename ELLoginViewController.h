@@ -9,5 +9,5 @@
 #import <UIKit/UIKit.h>
 #import "ELViewController.h"
 @interface ELLoginViewController : ELViewController <UITextFieldDelegate, UIScrollViewDelegate, UIAlertViewDelegate>
-
+ @property BOOL createOnly;
 @end

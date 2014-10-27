@@ -22,13 +22,14 @@
 
 #import "ELPaymentHeader.h"
 @interface ELViewController ()
-
+ @property (strong, nonatomic) NSArray *stateArray;
 @end
 
 @implementation ELViewController
 @synthesize activityView = _activityView;
 @synthesize hudProgressView = _hudProgressView;
 @synthesize activityLabel = _activityLabel;
+ @synthesize hudProgressHolderView = _hudProgressHolderView;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -43,8 +44,11 @@
 -(void)viewWillLayoutSubviews
 {
     [super viewWillLayoutSubviews];
+    self.hudProgressHolderView.bounds = CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height);
+    self.hudProgressHolderView.center = CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2);
+    
     self.hudProgressView.bounds = CGRectMake(0, 0, 200, 80);
-    self.hudProgressView.center = CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2);
+    self.hudProgressView.center = CGPointMake(self.hudProgressHolderView.bounds.size.width/2, self.hudProgressHolderView.bounds.size.height/2);
     
     self.activityView.bounds = CGRectMake(0, 0, 50, 50);
     self.activityView.center = CGPointMake(self.hudProgressView.bounds.size.width/2, 30);
@@ -61,6 +65,104 @@
     textField.backgroundColor = [[UIColor whiteColor]colorWithAlphaComponent:.75];
     [textField addTarget:self action:@selector(textFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
     return textField;
+}
+-(NSString*) formatPhoneNumber:(NSString*) simpleNumber deleteLastChar:(BOOL)deleteLastChar {
+    if(simpleNumber.length==0) return @"";
+    // use regex to remove non-digits(including spaces) so we are left with just the numbers
+    NSError *error = NULL;
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"[\\s-\\(\\)]" options:NSRegularExpressionCaseInsensitive error:&error];
+    simpleNumber = [regex stringByReplacingMatchesInString:simpleNumber options:0 range:NSMakeRange(0, [simpleNumber length]) withTemplate:@""];
+    
+    // check if the number is to long
+    if(simpleNumber.length>10) {
+        // remove last extra chars.
+        simpleNumber = [simpleNumber substringToIndex:10];
+    }
+    
+    if(deleteLastChar) {
+        // should we delete the last digit?
+        simpleNumber = [simpleNumber substringToIndex:[simpleNumber length] - 1];
+    }
+    
+    // 123 456 7890
+    // format the number.. if it's less then 7 digits.. then use this regex.
+    if(simpleNumber.length<7)
+        simpleNumber = [simpleNumber stringByReplacingOccurrencesOfString:@"(\\d{3})(\\d+)"
+                                                               withString:@"($1) $2"
+                                                                  options:NSRegularExpressionSearch
+                                                                    range:NSMakeRange(0, [simpleNumber length])];
+    
+    else   // else do this one..
+        simpleNumber = [simpleNumber stringByReplacingOccurrencesOfString:@"(\\d{3})(\\d{3})(\\d+)"
+                                                               withString:@"($1) $2-$3"
+                                                                  options:NSRegularExpressionSearch
+                                                                    range:NSMakeRange(0, [simpleNumber length])];
+    return simpleNumber;
+}
+-(NSString *)simple:(NSString *)string
+{
+    NSError *error = NULL;
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"[\\s-\\(\\)]" options:NSRegularExpressionCaseInsensitive error:&error];
+    string = [regex stringByReplacingMatchesInString:string options:0 range:NSMakeRange(0, [string length]) withTemplate:@""];
+    return string;
+    
+}
+- (void)retrieveCityStateFromZipcode:(NSString *)zipCode completion:(ELCityStateCompletionHandler)handler{
+    
+    [ELViewController retrieveCityStateFromZipcode:zipCode completion:handler];
+}
+
++ (void)retrieveCityStateFromZipcode:(NSString *)zipCode completion:(ELCityStateCompletionHandler)handler{
+    __block NSString *stateString, *cityString;
+    NSString *strRequestParams = [NSString stringWithFormat:@"http://maps.googleapis.com/maps/api/geocode/json?address=&components=postal_code:%@&sensor=false",zipCode];
+    strRequestParams = [strRequestParams stringByAddingPercentEscapesUsingEncoding:NSStringEncodingConversionExternalRepresentation];
+    NSURL *url = [NSURL URLWithString:strRequestParams];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    [request setHTTPMethod:@"GET"];
+    [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
+        if (connectionError || !data) {
+            return;
+        }
+        NSDictionary *addressDict = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+        NSArray *results = addressDict[@"results"];
+        if (!results.count) return;
+        NSDictionary *addressDict2 = results[0];
+        NSArray *addressComponents = addressDict2[@"address_components"];
+        // *addComps = results[0];
+        BOOL valid = NO;
+        for (NSDictionary *dictionary in addressComponents)
+        {
+            NSArray *typesArray = dictionary[@"types"];
+            for (NSString *string in typesArray)
+            {
+                if ([string isEqualToString:@"country"] && [dictionary[@"short_name"] isEqualToString:@"US"]) valid = YES;
+            }
+        }
+        if (valid) {
+            for (NSDictionary *dictionary in addressComponents)
+            {
+                NSArray *typesArray = dictionary[@"types"];
+                for (NSString *string in typesArray) {
+                    if ([string isEqualToString:@"administrative_area_level_1"]){
+                        stateString = dictionary[@"short_name"];
+                    }
+                    else if([string isEqualToString:@"sublocality"]){
+                        cityString =dictionary[@"short_name"];
+                    }
+                    else if([string isEqualToString:@"locality"] && !cityString)
+                    {
+                        cityString = dictionary[@"short_name"];
+                    }
+                    else if([string isEqualToString:@"administrative_area_level_3"]){
+                        cityString = dictionary[@"short_name"];
+                    }
+                }
+            }
+        }
+        if (handler) {
+            handler(cityString, stateString, connectionError);
+        }
+    }];
 }
 -(void)placeView:(UIView *)view withOffset:(ELViewXOffset)xOffset width:(ELViewWidth)width offset:(float)offset{
     
@@ -250,13 +352,22 @@
 }
 -(void)showActivityView
 {
-    [self.view addSubview:self.hudProgressView];
+    [self.view addSubview:self.hudProgressHolderView];
     [self.activityView startAnimating];
 }
 -(void)hideActivityView
 {
     [self.activityView stopAnimating];
-    [self.hudProgressView removeFromSuperview];
+    [self.hudProgressHolderView removeFromSuperview];
+}
+-(UIView *)hudProgressHolderView
+{
+    if (!_hudProgressHolderView) {
+        _hudProgressHolderView = [UIView new];
+        _hudProgressHolderView.userInteractionEnabled = NO;
+        [_hudProgressHolderView addSubview:self.hudProgressView];
+    }
+    return _hudProgressHolderView;
 }
 -(UIView *)hudProgressView
 {
@@ -280,6 +391,16 @@
     }
     return _activityLabel;;
 }
++ (UIViewController*) topMostController
+{
+    UIViewController *topController = [UIApplication sharedApplication].keyWindow.rootViewController;
+    
+    while (topController.presentedViewController) {
+        topController = topController.presentedViewController;
+    }
+    return topController;
+}
+
 @end
 
 

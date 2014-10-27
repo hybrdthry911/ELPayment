@@ -10,7 +10,7 @@
 
 
 @interface ELTableViewController : UITableViewController
-@property (strong, nonatomic) UIView *hudProgressView;
+@property (strong, nonatomic) UIView *hudProgressView, *hudProgressHolderView;
 @property (strong, nonatomic) UILabel *activityLabel;
 @property (strong, nonatomic) UIActivityIndicatorView *activityView;
 @property (strong, nonatomic) UITextField *currentTextField, *currentKeyboardTextField;

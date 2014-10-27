@@ -25,6 +25,7 @@
 #define ABBREVIATED_STATE_ARRAY [NSArray arrayWithObjects:@"AL", @"AK", @"AZ", @"AR", @"CA", @"CO", @"CT", @"DE", @"FL", @"GA", @"HI", @"ID", @"IL", @"IN", @"IA", @"KS", @"KY", @"LA", @"ME", @"MD", @"MA", @"MI", @"MN", @"MS", @"MO", @"MT", @"NE", @"NV", @"NH", @"NJ", @"NM", @"NY", @"NC", @"ND", @"OH", @"OK", @"OR", @"PA", @"RI", @"SC", @"SD", @"TN", @"TX", @"UT", @"VT", @"VA", @"WA", @"WV", @"WI", @"WY", nil];
 
 #import "ELPaymentHeader.h"
+#import <AddressBook/AddressBook.h>
 
 typedef enum{
  elPaymentStageAddress,elPaymentStageShipping,elPaymentStageCreditCard,elPaymentStageInProcess,elPaymentStageComplete,elPaymentStageError
@@ -63,7 +64,7 @@ typedef enum{
     self.customer = self.order.customer;
     self.cardToCharge = self.order.card;
     self.title = @"Checkout";
-    [self calculatingShipping:YES];
+    [self calculatingShipping:YES completion:nil];
     self.stateArray = ABBREVIATED_STATE_ARRAY;
     [self.view setAutoresizesSubviews:YES];
     
@@ -80,9 +81,9 @@ typedef enum{
 }
 
 #pragma mark Setup Methods
--(void)setupOrder{
+-(void)setupOrder
+{
     [self checkToProceed];
-    
     if (self.customer && self.customer.defaultCard && self.order.orderStatus != elOrderStatusComplete && self.order.orderStatus != elOrderStatusChargeSucceeded) {
         [self handleRadioButtonSelect:self.useNewRadioButton];
         [self populateShippingLabel];
@@ -92,7 +93,6 @@ typedef enum{
     }
     self.completeSummaryView.order = self.order;
     self.completeSummaryView.card = self.cardToCharge;
-    
 }
 -(void)setupNotifications{
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(userLoggedIn:) name:elNotificationLoginSucceeded object:nil];
@@ -189,8 +189,9 @@ typedef enum{
     creditCardLabel.center = CGPointMake(self.creditCardScrollView.bounds.size.width/2, 20);
     [self.creditCardScrollView addSubview:creditCardLabel];
     
-    self.useExistingRadioButton = [[UIButton alloc]init];
-    self.useNewRadioButton = [[UIButton alloc]init];
+    self.useExistingRadioButton = [UIButton new];
+    self.useNewRadioButton = [UIButton new];
+//    self.applePayButton = [UIButton new];
     
     [self.useExistingRadioButton makeMine];
     [self.useExistingRadioButton setTitle:@"Choose Existing Credit Card"];
@@ -200,7 +201,9 @@ typedef enum{
     [self.useNewRadioButton setTitle:@"Use New Credit Card"];
     [self.useNewRadioButton addTarget:self action:@selector(handleRadioButtonSelect:) forControlEvents:UIControlEventTouchUpInside];
     
-    
+//    [self.applePayButton makeMine];
+//    [self.applePayButton setTitle:@" Pay"];
+//    [self.applePayButton addTarget:self action:@selector(handleRadioButtonSelect:) forControlEvents:UIControlEventTouchUpInside];
     
     self.shippingLabel = [[UILabel alloc]init];
     self.shippingLabel.backgroundColor = [UIColor clearColor];
@@ -270,7 +273,7 @@ typedef enum{
 #pragma mark Position Methods
 -(void)populateCityState{
     
-    [self calculatingShipping:YES];
+    [self calculatingShipping:YES completion:nil];
     NSString *strRequestParams = [NSString stringWithFormat:@"http://maps.googleapis.com/maps/api/geocode/json?address=&components=postal_code:%@&sensor=false",self.addressZipCodeTextField.text];
     strRequestParams = [strRequestParams stringByAddingPercentEscapesUsingEncoding:NSStringEncodingConversionExternalRepresentation];
     NSURL *url = [NSURL URLWithString:strRequestParams];
@@ -385,7 +388,7 @@ typedef enum{
     
     if(![PFAnonymousUtils isLinkedWithUser:self.currentUser] && self.currentUser && [[[ELUserManager sharedUserManager]currentCustomer]cards].count)
     {
-        
+//        [self.addressScrollView addSubview:self.applePayButton];
         [self.addressScrollView addSubview:self.useExistingRadioButton];
         [self.addressScrollView addSubview:self.useNewRadioButton];
     }
@@ -420,6 +423,7 @@ typedef enum{
              [self placeView:self.useNewRadioButton withOffset:ELViewXOffsetNone width:ELViewWidthFull offset:1];
          }
          
+       //  [self placeView:self.applePayButton withOffset:ELViewXOffsetNone width:ELViewWidthFull offset:0];
      }
                      completion:^(BOOL finished)
      {
@@ -439,20 +443,20 @@ typedef enum{
     
     [UIView animateWithDuration:.25 animations:
      ^{
-         int offset = 2;
+         int offset = 1;
          int factor = !self.useExistingCreditCard;
          if([PFAnonymousUtils isLinkedWithUser:self.currentUser] || !self.currentUser || ![[ELUserManager sharedUserManager]currentCustomer] || ![[[ELUserManager sharedUserManager]currentCustomer]cards].count) offset-=2;
          
          [UIView animateWithDuration:.25 animations:
           ^{
-              [self placeView:self.nameTextField withOffset:ELViewXOffsetNone width:ELViewWidthFull offset:offset+0*factor];
-              [self placeView:self.addressLine1TextField withOffset:ELViewXOffsetNone width:ELViewWidthFull offset:offset+1*factor];
-              [self placeView:self.addressLine2TextField withOffset:ELViewXOffsetNone width:ELViewWidthFull offset:offset+2*factor];
-              [self placeView:self.addressCityTextField withOffset:ELViewXOffsetOneHalf width:ELViewWidthHalf offset:offset+3*factor];
-              [self placeView:self.addressZipCodeTextField withOffset:ELViewXOffsetNone width:ELViewWidthQuarter offset:offset+3*factor];
-              [self placeView:self.stateButton withOffset:ELViewXOffsetOneQuarter width:ELViewWidthQuarter offset:offset+3*factor];
-              [self placeView:self.emailTextField withOffset:ELViewXOffsetNone width:ELViewWidthFull offset:offset+4*factor];
-              [self placeView:self.phoneNumberTextField withOffset:ELViewXOffsetNone width:ELViewWidthFull offset:offset+5*factor];
+              [self placeView:self.nameTextField withOffset:ELViewXOffsetNone width:ELViewWidthFull offset:offset+1*factor];
+              [self placeView:self.addressLine1TextField withOffset:ELViewXOffsetNone width:ELViewWidthFull offset:offset+2*factor];
+              [self placeView:self.addressLine2TextField withOffset:ELViewXOffsetNone width:ELViewWidthFull offset:offset+3*factor];
+              [self placeView:self.addressCityTextField withOffset:ELViewXOffsetOneHalf width:ELViewWidthHalf offset:offset+4*factor];
+              [self placeView:self.addressZipCodeTextField withOffset:ELViewXOffsetNone width:ELViewWidthQuarter offset:offset+4*factor];
+              [self placeView:self.stateButton withOffset:ELViewXOffsetOneQuarter width:ELViewWidthQuarter offset:offset+4*factor];
+              [self placeView:self.emailTextField withOffset:ELViewXOffsetNone width:ELViewWidthFull offset:offset+5*factor];
+              [self placeView:self.phoneNumberTextField withOffset:ELViewXOffsetNone width:ELViewWidthFull offset:offset+6*factor];
               self.nameTextField.alpha = 1;
               self.addressLine1TextField.alpha = 1;
               self.addressLine2TextField.alpha = 1;
@@ -470,7 +474,7 @@ typedef enum{
      }
                      completion:^(BOOL finished)
      {
-         self.addressScrollView.contentSize = CGSizeMake(self.addressScrollView.bounds.size.width, ROW_OFFSET*7+ROW_HEIGHT/2);
+         self.addressScrollView.contentSize = CGSizeMake(self.addressScrollView.bounds.size.width, ROW_OFFSET*8+ROW_HEIGHT/2);
      }];
     
     
@@ -486,27 +490,9 @@ typedef enum{
          self.stateButton.alpha = .25;
          self.emailTextField.alpha = .25;
          self.phoneNumberTextField.alpha = .25;
-         
-         
-//         [self moveViewUp:self.nameTextField withXOffset:ELViewXOffsetNone width:ELViewWidthFull addSubView:NO];
-//         [self moveViewUp:self.addressLine1TextField withXOffset:ELViewXOffsetNone width:ELViewWidthFull addSubView:NO];
-//         [self moveViewUp:self.addressLine2TextField withXOffset:ELViewXOffsetNone width:ELViewWidthFull addSubView:NO];
-//         [self moveViewUp:self.addressCityTextField withXOffset:ELViewXOffsetOneHalf width:ELViewWidthHalf addSubView:NO];
-//         [self moveViewUp:self.addressZipCodeTextField withXOffset:ELViewXOffsetNone width:ELViewWidthQuarter addSubView:NO];
-//         [self moveViewUp:self.stateButton withXOffset:ELViewXOffsetOneHalf width:ELViewWidthQuarter addSubView:NO];
-//         [self moveViewUp:self.emailTextField withXOffset:ELViewXOffsetNone width:ELViewWidthFull addSubView:NO];
-//         [self moveViewUp:self.phoneNumberTextField withXOffset:ELViewXOffsetNone width:ELViewWidthFull addSubView:NO];
-         
      }
                      completion:^(BOOL finished)
      {
-//         for (UIView *view in self.addressScrollView.subviews) {
-//             if ([view isKindOfClass:[UITextField class]]) {
-//                 [view removeFromSuperview];
-//             }
-//         }
-//         [self.stateButton removeFromSuperview];
-//         self.addressScrollView.contentSize = CGSizeMake(self.addressScrollView.bounds.size.width, ROW_OFFSET*3+ROW_HEIGHT/2);
      }];
 }
 -(void)moveViewUp:(UIView *)view withXOffset:(ELViewXOffset)xOffset width:(ELViewWidth)width addSubView:(BOOL)add{
@@ -723,7 +709,7 @@ typedef enum{
         case elPaymentStageAddress:
             if(self.customer && self.customer.identifier && self.customer.defaultCard && self.useExistingCreditCard)
             {
-                [self calculatingShipping:NO];
+                [self calculatingShipping:NO completion:nil];
                 [self showContinue];
             }
             else if (!self.useExistingCreditCard
@@ -735,7 +721,7 @@ typedef enum{
                      && [self simple:self.phoneNumberTextField.text].length >= 10
                      && [numericOnly isSupersetOfSet: myPhoneNumberStringSet]
                      ) {
-                [self calculatingShipping:NO];
+                [self calculatingShipping:NO completion:nil];
                 [self showContinue];
             }
             if (self.currentUser) {
@@ -796,13 +782,14 @@ typedef enum{
 -(IBAction)handleRadioButtonSelect:(UIButton *)sender{
     
     self.order.zipCode = self.addressZipCodeTextField.text.length>=5?self.addressZipCodeTextField.text:nil;
+    
     if (sender == self.useExistingRadioButton)
     {
         if (![PFAnonymousUtils isLinkedWithUser:self.currentUser] && [self.currentUser[@"emailVerified"]boolValue]) {
             self.useExistingCreditCard = YES;
             if (self.creditCardPickerView.hidden) [self showCreditCardPickerView];
             [self showCreditCardPickerView];
-            self.stripeView.cardNumberField.text = [NSString stringWithFormat:@"**** **** **** %@",self.customer.defaultCard.last4];
+            self.stripeView.cardNumberField.text = [NSString stringWithFormat:@"**** **** **** %@",self.cardToCharge.dynamicLast4?self.cardToCharge.dynamicLast4:self.cardToCharge.last4];
             self.order.zipCode = nil;
         }
         else if(![PFAnonymousUtils isLinkedWithUser:self.currentUser] && ![self.currentUser[@"emailVerified"]boolValue])
@@ -821,15 +808,19 @@ typedef enum{
             [myAlert show];
         }
     }
-    else
+    else if(sender == self.useNewRadioButton)
     {
-
         self.stripeView.cardNumberField.text = @"";
         self.useExistingCreditCard = NO;
         self.stripeView.cardNumberField.text = nil;
     }
-
-    [self calculatingShipping:YES];
+//    else if(sender == self.applePayButton)
+//    {
+//        self.stripeView.cardNumberField.text = @"";
+//        self.useExistingCreditCard = NO;
+//        self.stripeView.cardNumberField.text = nil;
+//    }
+    [self calculatingShipping:YES completion:nil];
     [self positionRadioButtons];
     [self positionTextFields];
     [self checkToProceed];
@@ -842,7 +833,7 @@ typedef enum{
     {
         case elPaymentStageAddress:
         {
-            [self calculatingShipping:NO];
+            [self calculatingShipping:NO completion:nil];
             self.paymentStage = elPaymentStageShipping;
             [self checkToProceed];
             break;
@@ -897,7 +888,7 @@ typedef enum{
 }
 
 #pragma mark Order Methods
--(void)calculatingShipping:(BOOL)override{
+-(void)calculatingShipping:(BOOL)override completion:(elOrderCompletionBlock)handler{
     if (!self.order.shipping || override)
     {
         if ([self.order calculateShippingAsync:^(ELOrderStatus orderStatus, NSError *error)
@@ -911,6 +902,7 @@ typedef enum{
                      [self populateErrorShippingLabel];
                      [self checkToProceed];
                  }
+                 if(handler) handler(orderStatus,error);
              }])
         {
             self.shippingLabel.text = @"Calculating Shipping";
@@ -966,7 +958,9 @@ typedef enum{
         }
     }];
 }
--(void)chargeNewCustomer{
+-(void)chargeNewCustomer
+{
+    
     ELCustomer *startingcustomer = [ELCustomer customer];
     startingcustomer.email = [self.emailTextField.text lowercaseString];
     startingcustomer.descriptor = [self simple:self.phoneNumberTextField.text];
@@ -974,7 +968,8 @@ typedef enum{
 
     //If there is no customer immediately create a new customer, and add the card information
 
-    [ELCustomer createStripeCustomer:startingcustomer completionHandler:^(ELCustomer *customer, NSError *error) {
+    [ELCustomer createCustomer:startingcustomer completionHandler:^(ELCustomer *customer, NSError *error)
+    {
         if (error)
         {
             NSLog(@"Error Creating Customer:%@",error);
@@ -987,31 +982,34 @@ typedef enum{
                  if (error || !token) NSLog(@"Error creating token:%@",error);
                  else {
                      [customer addToken:token toStripeCustomerWithCompletion:^(ELCustomer *finalCustomer, ELCard *card, NSError *error) {
-                         if (error || !finalCustomer){
+                         if (error || !finalCustomer)
+                         {
                              NSLog(@"Error:%@ \n Adding token:%@ \nTo Customer:%@",error,token,finalCustomer);
                              [self handlePaymentError:error];
                          }
-                         else {
+                         else
+                         {
                              self.customer = finalCustomer;
                              self.order.customer = self.customer;
                              self.order.card = card;
                              [self.order processOrderForPayment:^(ELOrderStatus orderStatus, NSError *error) {
-                                 if (error) {
+                                 if (error)
+                                 {
                                      [self handlePaymentError:error];
                                  }
-                                 
-                                 if (orderStatus == elOrderStatusComplete) {
+                                 if (orderStatus == elOrderStatusComplete)
+                                 {
                                      [self handlePaymentSuccess];
                                  }
                                  else if(orderStatus == elOrderStatusChargeSucceeded)
                                  {
                                      NSLog(@"Order successfully charged, error saving to parse:%@",error);
                                  }
-                                 else if(orderStatus == elOrderStatusChargeUnsuccessful){
+                                 else if(orderStatus == elOrderStatusChargeUnsuccessful)
+                                 {
                                      [self handlePaymentError:error];
                                  }
                              }];
-                             
                          }
                      }];
                  }
@@ -1186,7 +1184,7 @@ typedef enum{
     [self checkToProceed];
 }
 //StripeView Delegate
--(void)paymentView:(PTKView *)paymentView withCard:(PTKCard *)card isValid:(BOOL)valid{
+- (void)paymentView:(PTKView *)paymentView withCard:(PTKCard *)card isValid:(BOOL)valid{
     NSLog(@"valid:%@",valid?@"YES":@"NO");
     self.validCC = valid;
     if (!valid){
@@ -1197,7 +1195,7 @@ typedef enum{
     else if(!self.useExistingCreditCard) self.cardToCharge = [self cardFromTextFields];
     [self checkToProceed];
 }
--(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
     
     if (alertView == self.paymentErrorAlertView) {
         self.stripeView.cardNumberField.text = nil;
@@ -1225,18 +1223,18 @@ typedef enum{
 }
 
 #pragma mark Utility
--(ELTextField *)addNewTextField{
+- (ELTextField *)addNewTextField{
     ELTextField *textField = [super addNewTextField];
     textField.delegate = self;
     return textField;
 }
--(void)populateShippingLabel{
-    if (self.order.shipping && self.order.cheapestShipmentCarrier) self.shippingLabel.text = [NSString stringWithFormat:@"%@: $%.2f",self.order.cheapestShipmentCarrier, self.order.shipping.floatValue];
+- (void)populateShippingLabel{
+    if (self.order.shipping && self.order.shippingCarrier) self.shippingLabel.text = [NSString stringWithFormat:@"%@: $%.2f",self.order.shippingCarrier, self.order.shipping.floatValue];
 }
--(void)populateErrorShippingLabel{
+- (void)populateErrorShippingLabel{
     self.shippingLabel.text = @"Error Retrieving Shipping Prices. Try again later or Contact E-Nough Logic at 413-206-9184";
 }
--(void)fillFromCustomerWithCard:(ELCard *)card{
+- (void)fillFromCustomerWithCard:(ELCard *)card{
     if (self.customer && [self.currentUser[@"emailVerified"]boolValue])
     {
         self.emailTextField.text = self.customer.email;
@@ -1244,27 +1242,30 @@ typedef enum{
         self.addressLine2TextField.text = card.addressLine2;
         self.addressCityTextField.text = card.addressCity;
         self.phoneNumberTextField.text = self.customer.descriptor;
-        [self textField:self.phoneNumberTextField shouldChangeCharactersInRange:NSRangeFromString(self.phoneNumberTextField.text) replacementString:self.phoneNumberTextField.text];
-        if ([card.addressZip isKindOfClass:[NSString class]]) {
-            self.addressZipCodeTextField.text = card.addressZip;
-        }
+        [self                textField:self.phoneNumberTextField
+         shouldChangeCharactersInRange:NSRangeFromString(self.phoneNumberTextField.text)
+                     replacementString:self.phoneNumberTextField.text];
+        
+        if ([card.addressZip isKindOfClass:[NSString class]]) self.addressZipCodeTextField.text = card.addressZip;
         self.stateString = card.addressState;
         [self.stateButton setTitle:self.stateString forState:UIControlStateNormal];
         self.stateButton.layer.borderColor = ICON_BLUE_SOLID.CGColor;
         self.nameTextField.text = card.name;
-        for (UIView *view in self.addressScrollView.subviews) {
-            if ([view isKindOfClass:[ELTextField class]]) {
+        for (UIView *view in self.addressScrollView.subviews)
+        {
+            if ([view isKindOfClass:[ELTextField class]])
+            {
                 ELTextField *tField = (ELTextField *)view;
                 if (tField.text.length) tField.layer.borderColor =ICON_BLUE_SOLID.CGColor;
             }
         }
     }
-    else{
+    else
+    {
         [self clearTextFields];
     }
-    
 }
--(void)clearTextFields{
+- (void)clearTextFields{
     for (UIView *view in self.addressScrollView.subviews)
     {
         if ([view isKindOfClass:[ELTextField class]]) {
@@ -1278,7 +1279,7 @@ typedef enum{
     // [self.addressScrollView setNeedsDisplay];
 }
 #pragma mark NavigationMethods
--(BOOL)navigationShouldPopOnBackButton{
+- (BOOL)navigationShouldPopOnBackButton{
     BOOL shouldPop = (self.paymentStage == elPaymentStageAddress);
     switch (self.paymentStage) {
         case elPaymentStageCreditCard:
@@ -1326,7 +1327,7 @@ typedef enum{
     return YES;
 
 }
--(NSString*) formatPhoneNumber:(NSString*) simpleNumber deleteLastChar:(BOOL)deleteLastChar {
+- (NSString*) formatPhoneNumber:(NSString*) simpleNumber deleteLastChar:(BOOL)deleteLastChar {
     if(simpleNumber.length==0) return @"";
     // use regex to remove non-digits(including spaces) so we are left with just the numbers
     NSError *error = NULL;
@@ -1359,7 +1360,7 @@ typedef enum{
                                                                     range:NSMakeRange(0, [simpleNumber length])];
     return simpleNumber;
 }
--(NSString *)simple:(NSString *)string{
+- (NSString *)simple:(NSString *)string{
     NSError *error = NULL;
     NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"[\\s-\\(\\)]" options:NSRegularExpressionCaseInsensitive error:&error];
     string = [regex stringByReplacingMatchesInString:string options:0 range:NSMakeRange(0, [string length]) withTemplate:@""];
@@ -1398,7 +1399,7 @@ typedef enum{
         {
             self.order.zipCode = textField.text;
             [self populateCityState];
-            [self calculatingShipping:YES];
+            [self calculatingShipping:YES completion:nil];
         }
         else{
             self.order.zipCode = nil;
@@ -1423,6 +1424,7 @@ typedef enum{
     [super textFieldDidEndEditing:textField];
     [self checkToProceed];
 }
+
 #pragma mark - Pickerview Methods
 - (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView{
     return 1;
@@ -1438,7 +1440,7 @@ typedef enum{
     
     return nil;
 }
--(UIView *)pickerView:(UIPickerView *)pickerView viewForRow:(NSInteger)row forComponent:(NSInteger)component reusingView:(UIView *)view{
+- (UIView *)pickerView:(UIPickerView *)pickerView viewForRow:(NSInteger)row forComponent:(NSInteger)component reusingView:(UIView *)view{
     UILabel *label = [[UILabel alloc]init];
     label.textAlignment = NSTextAlignmentCenter;
     [label makeMine];
@@ -1461,7 +1463,7 @@ typedef enum{
         [self fillFromCustomerWithCard:self.customer.cards[row]];
     }
 }
--(void)pickerView:(ELPickerView *)pickerView cancelledSelectionAtRow:(NSInteger)row{
+- (void)pickerViewCancelled:(ELPickerView *)pickerView{
     if (pickerView == self.statePickerView) {
         [self fillFromCustomerWithCard:self.cardToCharge];
     }
@@ -1475,7 +1477,7 @@ typedef enum{
     }
     [pickerView removeFromSuperview];
 }
--(void)pickerView:(ELPickerView *)pickerView completedSelectionAtRow:(NSInteger)row{
+- (void)pickerView:(ELPickerView *)pickerView completedSelectionAtRow:(NSInteger)row{
     if (pickerView == self.statePickerView) {
         self.stateString =self.stateArray[row];
         [self.stateButton setTitle:self.stateString forState:UIControlStateNormal];
@@ -1486,7 +1488,8 @@ typedef enum{
         
         ELCard *oldCard = self.cardToCharge;
         self.cardToCharge = self.customer.cards[row];
-        if (oldCard != self.cardToCharge) [self calculatingShipping:YES];
+        self.stripeView.cardNumberField.text = [NSString stringWithFormat:@"**** **** **%@ %@",self.cardToCharge.isApplePayCard?@" ":@"**",self.cardToCharge.dynamicLast4?self.cardToCharge.dynamicLast4:self.cardToCharge.last4];
+        if (oldCard != self.cardToCharge) [self calculatingShipping:YES completion:nil];
         self.order.card = self.cardToCharge;
         [self fillFromCustomerWithCard:self.cardToCharge];
     }
@@ -1499,4 +1502,7 @@ typedef enum{
     // Create the sign up view controller
     [self.navigationController pushViewController:self.loginViewController animated:YES];
 }
+
+
+
 @end

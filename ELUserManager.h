@@ -21,6 +21,7 @@ typedef void (^ELVerifyPasswordHandler)(BOOL verified, NSError* error);
 -(PFUser *)currentUser;
 -(ELCustomer *)currentCustomer;
 -(void)fetchCustomer;
+-(void)fetchCustomerCompletion:(ELCustomerCompletionBlock)handler;
 -(void)verifyPassword:(NSString *)password completion:(ELVerifyPasswordHandler)handler;
 -(void)logout;
 @end
