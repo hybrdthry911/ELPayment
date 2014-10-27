@@ -7,6 +7,7 @@
 //
 
 #import "ELViewController.h"
+#import "ELPickerView.h"
 @class ELOrder;
 @class ELShippingAddress;
 @class STPToken;

@@ -7,7 +7,7 @@
 //
 
 #import "ApplePayTableViewCell.h"
-
+#import "ELPaymentHeader.h"
 @interface ApplePayTableViewCell()
 @end
 

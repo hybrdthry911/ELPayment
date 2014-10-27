@@ -7,7 +7,8 @@
 //
 
 #import "ELTableViewController.h"
-
+#import "ELPickerView.h"
+#import <PassKit/PassKit.h>
 @class ELOrder;
 
 @interface ELPaymentSelectViewController : ELTableViewController <ELPickerViewDelegate, UIPickerViewDataSource, UIPickerViewDelegate, PKPaymentAuthorizationViewControllerDelegate>
