@@ -20,7 +20,7 @@
     self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
     if (!self.order.shippingRates)
     {
-        [self showActivityView];
+        [self showActivityViewWithMessage:@"Fetching Shipping Prices..."];
         [self.order calculateShippingAsync:^(ELOrderStatus orderStatus, NSError *error) {
             
         }];

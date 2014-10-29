@@ -11,18 +11,19 @@
 #import <Parse/Parse.h>
 #import "ELCustomer.h"
 @class ELCustomer;
-typedef void (^ELVerifyPasswordHandler)(BOOL verified, NSError* error);
+typedef void (^ELVerifyHandler)(BOOL verified, NSError* error);
 
-@interface ELUserManager : NSObject <ELVerifyPasswordViewDelegate>
+@interface ELUserManager : NSObject <ELVerifyPasswordViewDelegate, UIAlertViewDelegate>
  @property BOOL passwordSessionActive;
 
 +(ELUserManager *)sharedUserManager;
--(void)verifyPasswordWithComletion:(ELVerifyPasswordHandler)handler;
--(void)checkForSessionTimer;
+-(void)verifyPasswordWithComletion:(ELVerifyHandler)handler;
+//-(void)checkForSessionTimer;
 -(PFUser *)currentUser;
 -(ELCustomer *)currentCustomer;
 -(void)fetchCustomer;
 -(void)fetchCustomerCompletion:(ELCustomerCompletionBlock)handler;
--(void)verifyPassword:(NSString *)password completion:(ELVerifyPasswordHandler)handler;
+-(void)verifyPassword:(NSString *)password completion:(ELVerifyHandler)handler;
 -(void)logout;
+-(void)checkForSessionActiveThen:(ELVerifyHandler)completion;
 @end

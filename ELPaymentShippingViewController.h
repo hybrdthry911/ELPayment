@@ -18,5 +18,13 @@
  @property (strong, nonatomic) STPToken *token;
  @property (strong, nonatomic) STPCard *card;
  @property (strong, nonatomic) ELShippingAddress *shippingAddress;
+ @property (strong, nonatomic) NSString *stateString;
+ @property (strong, nonatomic) ELTextField *nameTextField, *addressLine1TextField, *addressLine2TextField, *addressZipCodeTextField, *addressCityTextField;
+ @property (strong, nonatomic) UIButton *stateButton;
+ @property (strong, nonatomic) UIScrollView *scrollView;
+ @property (strong, nonatomic) ELPickerView *statePickerView;
+ @property (strong, nonatomic) NSArray *stateArray, *fullStateArray;
+ @property (strong, nonatomic) UIBarButtonItem *shippingMethodButton;
+- (void)checkForNext;
 @end
 

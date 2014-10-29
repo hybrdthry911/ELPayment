@@ -27,13 +27,6 @@
 
 
 @interface ELPaymentShippingViewController ()
- @property (strong, nonatomic) NSString *stateString;
- @property (strong, nonatomic) ELTextField *nameTextField, *addressLine1TextField, *addressLine2TextField, *addressZipCodeTextField, *addressCityTextField;
- @property (strong, nonatomic) UIButton *stateButton;
- @property (strong, nonatomic) UIScrollView *scrollView;
- @property (strong, nonatomic) ELPickerView *statePickerView;
- @property (strong, nonatomic) NSArray *stateArray, *fullStateArray;
- @property (strong, nonatomic) UIBarButtonItem *shippingMethodButton;
 @end
 
 @implementation ELPaymentShippingViewController
@@ -95,16 +88,20 @@
     {
         [self populateFromShippingAddress];
     }
-    else{
+    else if(self.card)
+    {
         UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"New Shipping Address" message:@"Populating from billing information." delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
         [myAlert show];
         [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:1];
         [self populateFromCard];
     }
-    self.order.zipCode = self.addressZipCodeTextField.text;
-    [self.order calculateShippingAsync:^(ELOrderStatus orderStatus, NSError *error) {
-        
-    }];
+    if (self.order)
+    {
+        self.order.zipCode = self.addressZipCodeTextField.text;
+        [self.order calculateShippingAsync:^(ELOrderStatus orderStatus, NSError *error) {
+            
+        }];
+    }
 }
 - (void)viewWillLayoutSubviews{
     
@@ -145,7 +142,8 @@
     [self textFieldDidChange:nil];
     [self checkForNext];
 }
-- (void)populateFromCard{
+- (void)populateFromCard
+{
     self.addressLine1TextField.text = self.card.addressLine1;
     self.addressLine2TextField.text = self.card.addressLine2;
     self.addressCityTextField.text = self.card.addressCity;

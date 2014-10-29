@@ -18,6 +18,9 @@
 #define QUARTER_WIDTH ((self.scrollView.bounds.size.width - LEFT_OFFSET*5)/4)
 
 
+typedef enum{
+    elCustomerAccountIndexOrders, elCustomerAccountIndexPaymentMethods, elCustomerAccountIndexShippingMethods, elCustomerAccountIndexAccountSettings, elCustomerAccountIndexLogout, elCustomerAccountIndexDefault
+}elCustomerAccountIndex;
 #import "ELPaymentHeader.h"
 @interface ELCustomerAccountViewController()
  @property (strong, nonatomic) PFQueryTableViewController *recentOrders;
@@ -37,13 +40,6 @@
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(userDownloadComplete:) name:elNotificationUserDownloadComplete object:nil];
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(userLoggedOut:) name:elNotificationLogoutSucceeded object:nil];
 }
--(void)verifyPassword:(NSString *)password WithCompletionHandler:(ELVerifyPasswordHandler)handler
-{
-    [PFCloud callFunctionInBackground:@"verifyPassword" withParameters:@{@"password":password} block:^(id object, NSError *error) {
-        handler(error ? NO:YES,error);
-    }];
-}
-
 -(void)populateTextFields
 {
     
@@ -73,15 +69,17 @@
         
         [self.tableView beginUpdates];
         [self.tableView numberOfRowsInSection:0];
-        if (self.tableView.numberOfSections && [self.tableView numberOfRowsInSection:1])    [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:1]]
+        if (self.tableView.numberOfSections && [self.tableView numberOfRowsInSection:1])
+            
+            [self.tableView deleteRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:1]]
+             
+             
                                                                       withRowAnimation: UITableViewRowAnimationMiddle];
-        if ([self.tableView numberOfRowsInSection:0]!=4)
+        if ([self.tableView numberOfRowsInSection:0]!=elCustomerAccountIndexDefault)
         {
-            [self.tableView insertRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:0],
-                                                     [NSIndexPath indexPathForRow:1 inSection:0],
-                                                     [NSIndexPath indexPathForRow:2 inSection:0],
-                                                     [NSIndexPath indexPathForRow:3 inSection:0]]
-                                  withRowAnimation:UITableViewRowAnimationAutomatic];
+            for (int i = 0;i<elCustomerAccountIndexDefault;i++) {
+                 [self.tableView insertRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:i inSection:0]] withRowAnimation:UITableViewRowAnimationAutomatic];
+            }
         }
         [self.tableView endUpdates];
     }
@@ -113,7 +111,11 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     // Return the number of rows in the section.
-    return section ? (![[ELUserManager sharedUserManager]currentUser] || [PFAnonymousUtils isLinkedWithUser:[[ELUserManager sharedUserManager]currentUser]]) ? 1 : 0 : (![[ELUserManager sharedUserManager]currentUser] || [PFAnonymousUtils isLinkedWithUser:[[ELUserManager sharedUserManager]currentUser]]) ? 0 : 4;
+    if (section)
+        return (![[ELUserManager sharedUserManager]currentUser] || [PFAnonymousUtils isLinkedWithUser:[[ELUserManager sharedUserManager]currentUser]]) ? 1 : 0;
+    else{
+        return (![[ELUserManager sharedUserManager]currentUser] || [PFAnonymousUtils isLinkedWithUser:[[ELUserManager sharedUserManager]currentUser]]) ? 0: elCustomerAccountIndexDefault;
+    }
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -129,16 +131,19 @@
     if (!indexPath.section) {
         //User Logged in
         switch (indexPath.row) {
-            case 0:
+            case elCustomerAccountIndexOrders:
                 cell.textLabel.text = @"Orders";
                 break;
-            case 1:
+            case elCustomerAccountIndexPaymentMethods:
                 cell.textLabel.text = @"Payment Methods";
                 break;
-            case 2:
+            case elCustomerAccountIndexShippingMethods:
+                cell.textLabel.text = @"Shipping Methods";
+                break;
+            case elCustomerAccountIndexAccountSettings:
                 cell.textLabel.text = @"Account Settings";
                 break;
-            case 3:
+            case elCustomerAccountIndexLogout:
                 cell.textLabel.text = @"Logout";
                 break;
             default:
@@ -154,132 +159,70 @@
     return cell;
 }
 
-/*
- // Override to support conditional editing of the table view.
- - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
- {
- // Return NO if you do not want the specified item to be editable.
- return YES;
- }
- */
-
-/*
- // Override to support editing the table view.
- - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
- {
- if (editingStyle == UITableViewCellEditingStyleDelete) {
- // Delete the row from the data source
- [tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
- }
- else if (editingStyle == UITableViewCellEditingStyleInsert) {
- // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
- }
- }
- */
-
-/*
- // Override to support rearranging the table view.
- - (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath
- {
- }
- */
-
-/*
- // Override to support conditional rearranging of the table view.
- - (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
- {
- // Return NO if you do not want the item to be re-orderable.
- return YES;
- }
- */
-
 #pragma mark - Table view delegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
-    if (indexPath.section) {
+    if (indexPath.section)
+    {
         ELLoginViewController *loginController = [[ELLoginViewController alloc]init];
         [self.navigationController pushViewController:loginController animated:YES];
     }
-    else if(indexPath.row == 3)
-    {
-        [[ELUserManager sharedUserManager]logout];
-    }
-    
-    else
-    {
-        PFUser *user = [[ELUserManager sharedUserManager]currentUser];
-        
-        if (![user[@"emailVerified"] boolValue]) {
-            [user fetchInBackgroundWithBlock:^(PFObject *object, NSError *error) {
-                
-            }];
-            self.verifyEmailAlertView = [[UIAlertView alloc]initWithTitle:@"Error" message:@"You haven't verified your email address associated with your account." delegate:self cancelButtonTitle:@"Close" otherButtonTitles:@"Resend",nil];
-            [self.verifyEmailAlertView show];
-            return;
-        }
-        switch (indexPath.row)
+    else{
+        if (indexPath.row == elCustomerAccountIndexLogout)  [[ELUserManager sharedUserManager]logout];
+        else
         {
-            case 0:
+            PFUser *user = [[ELUserManager sharedUserManager]currentUser];            
+            switch (indexPath.row)
             {
-                if ([[ELUserManager sharedUserManager]passwordSessionActive ]) {
-                    ELCustomerOrderTableViewController *customerOrderVC = [[ELCustomerOrderTableViewController alloc]initWithStyle:UITableViewStylePlain];
-                    [self.navigationController pushViewController:customerOrderVC animated:YES];
-                }
-                else{
-                    [[ELUserManager sharedUserManager]verifyPasswordWithComletion:^(BOOL verified, NSError *error) {
+                case elCustomerAccountIndexOrders:
+                {
+                    [[ELUserManager sharedUserManager] checkForSessionActiveThen:^(BOOL verified, NSError *error) {
                         if (verified) {
                             ELCustomerOrderTableViewController *customerOrderVC = [[ELCustomerOrderTableViewController alloc]initWithStyle:UITableViewStylePlain];
                             [self.navigationController pushViewController:customerOrderVC animated:YES];
                         }
                     }];
                 }
-
-            }
-                break;
-            case 1:
-            {
-                
-                if ([[ELUserManager sharedUserManager]passwordSessionActive]) {
-                    ELPaymentMethodsViewController *paymentMethodVC = [[ELPaymentMethodsViewController alloc]initWithStyle:UITableViewStylePlain];
-                    [self.navigationController pushViewController:paymentMethodVC animated:YES];
-                }
-                else
+                    break;
+                case elCustomerAccountIndexPaymentMethods:
                 {
-                    [[ELUserManager sharedUserManager]verifyPasswordWithComletion:^(BOOL verified, NSError *error) {
+                    [[ELUserManager sharedUserManager] checkForSessionActiveThen:^(BOOL verified, NSError *error) {
                         if (verified) {
                             ELPaymentMethodsViewController *paymentMethodVC = [[ELPaymentMethodsViewController alloc]initWithStyle:UITableViewStylePlain];
                             [self.navigationController pushViewController:paymentMethodVC animated:YES];
                         }
                     }];
+                    
                 }
-                
-            }
-                break;
-            case 2:
-            {
-                if ([[ELUserManager sharedUserManager]passwordSessionActive]) {
-                    ELCustomerAccountSettingsViewController *accountVC = [[ELCustomerAccountSettingsViewController alloc]init];
-                    [self.navigationController pushViewController:accountVC animated:YES];
-                }
-                else
+                    break;
+                case elCustomerAccountIndexShippingMethods:
                 {
-                    [[ELUserManager sharedUserManager]verifyPasswordWithComletion:^(BOOL verified, NSError *error) {
+                    [[ELUserManager sharedUserManager] checkForSessionActiveThen:^(BOOL verified, NSError *error) {
+                        if(verified){
+                            ELShippingSelectForEditViewController *vc = [ELShippingSelectForEditViewController new];
+                            [self.navigationController pushViewController:vc animated:YES];
+                        }
+                    }];
+                    
+                }
+                    break;
+                case elCustomerAccountIndexAccountSettings:
+                {
+                    [[ELUserManager sharedUserManager] checkForSessionActiveThen:^(BOOL verified, NSError *error) {
                         if (verified) {
                             ELCustomerAccountSettingsViewController *accountVC = [[ELCustomerAccountSettingsViewController alloc]init];
                             [self.navigationController pushViewController:accountVC animated:YES];
                         }
                     }];
                 }
-                
+                    break;
+                default:
+                    break;
             }
-                break;
-            case 3:
-                break;
-            default:
-                break;
         }
+        
     }
 }
 -(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex

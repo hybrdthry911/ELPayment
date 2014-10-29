@@ -27,17 +27,15 @@
 -(void)viewWillLayoutSubviews
 {
     [super viewWillLayoutSubviews];
-    
     self.hudProgressHolderView.bounds = CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height);
     self.hudProgressHolderView.center = CGPointMake(self.view.bounds.size.width/2, self.view.bounds.size.height/2);
     
-    
-    self.hudProgressView.bounds = CGRectMake(0, 0, 200, 80);
+    self.hudProgressView.bounds = CGRectMake(0, 0, self.hudProgressHolderView.bounds.size.width, 80);
     self.hudProgressView.center = CGPointMake(self.hudProgressHolderView.bounds.size.width/2, self.hudProgressHolderView.bounds.size.height/2);
     
-    self.activityView.bounds = CGRectMake(0, 0, 50, 50);
+    self.activityView.bounds = CGRectMake(0, 0, self.hudProgressHolderView.bounds.size.width, 50);
     self.activityView.center = CGPointMake(self.hudProgressView.bounds.size.width/2, 30);
-    self.activityLabel.bounds = CGRectMake(0, 0, self.hudProgressView.bounds.size.width/2-5 , 25);
+    self.activityLabel.bounds = CGRectMake(0, 0, self.hudProgressView.bounds.size.width , 25);
     self.activityLabel.center = CGPointMake(self.hudProgressView.bounds.size.width/2, self.hudProgressView.bounds.size.height - 10);
 }
 -(ELTextField *)addNewTextField{
@@ -80,10 +78,18 @@
 {
     _activityView = activityView;
 }
+-(void)showActivityViewWithMessage:(NSString *)message
+{
+    self.view.userInteractionEnabled = NO;
+    [self.view addSubview:self.hudProgressHolderView];
+    self.activityLabel.text = message;
+    [self.activityView startAnimating];
+}
 -(void)showActivityView
 {
     self.view.userInteractionEnabled = NO;
     [self.view addSubview:self.hudProgressHolderView];
+    self.activityLabel.text = @"Processing...";
     [self.activityView startAnimating];
 }
 -(void)hideActivityView
@@ -96,6 +102,7 @@
 {
     if (!_hudProgressHolderView) {
         _hudProgressHolderView = [UIView new];
+        [_hudProgressHolderView shineOnRepeatWithInterval:2];
         _hudProgressHolderView.userInteractionEnabled = NO;
         [_hudProgressHolderView addSubview:self.hudProgressView];
     }

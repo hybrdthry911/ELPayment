@@ -16,7 +16,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    if ([PFAnonymousUtils isLinkedWithUser:[[ELUserManager sharedUserManager]currentUser]]) {
+    if ([PFAnonymousUtils isLinkedWithUser:[[ELUserManager sharedUserManager]currentUser]] && self.order)
+    {
         ELPaymentShippingViewController *vc = [ELPaymentShippingViewController new];
         vc.order = self.order;
         vc.token = self.token;
@@ -29,7 +30,6 @@
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-
     return self.objects.count+1;
 }
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -63,7 +63,7 @@
         }
         ELShippingAddress *address = self.objects[indexPath.row];
         cell.textLabel.text = address.name;
-        cell.detailTextLabel.text = [NSString stringWithFormat:@"%@, %@ %@, %@ %@",address.line1, address.line2.length?[NSString stringWithFormat:@"%@, ",address.line2]:@"", address.city, address.state, address.zipCode];
+        cell.detailTextLabel.text = [[NSString stringWithFormat:@"%@, %@ %@, %@ %@",address.line1, address.line2.length?[NSString stringWithFormat:@"%@, ",address.line2]:@"", address.city, address.state, address.zipCode] stringByReplacingOccurrencesOfString:@"\n" withString:@" "];
         // Configure the cell...
         
         return cell;
@@ -72,11 +72,9 @@
 }
 
 #pragma mark - Table view delegate
-
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
-    
     if (indexPath.row < self.objects.count){
         ELShippingAddress *address = self.objects[indexPath.row];
         self.order.shipToState = address.state;

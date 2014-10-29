@@ -145,7 +145,8 @@ typedef enum{
 
 
 #pragma mark - PKPayment ViewController
-- (void)presentApplePay{
+- (void)presentApplePay
+{
     self.order.zipCode = nil;
     PKPaymentRequest *paymentRequest = [ELStripe paymentRequest];
     paymentRequest.requiredBillingAddressFields = PKAddressFieldAll;
@@ -163,7 +164,7 @@ typedef enum{
     }
     else
     {
-        if ([PKPaymentAuthorizationViewController canMakePayments]) {
+        if (![PKPaymentAuthorizationViewController canMakePayments]) {
             UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error:" message:@"Apple Pay not capable on this device" delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
             [myAlert show];
             [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:1];
@@ -222,7 +223,7 @@ typedef enum{
     [controller dismissViewControllerAnimated:YES completion:nil];
 }
 - (void)handlePaymentAuthorizationWithPayment:(PKPayment *)payment completion:(void (^)(PKPaymentAuthorizationStatus))completion{
-    [self showActivityView];
+    [self showActivityViewWithMessage:@"Procession Apple Pay Payment..."];
     if (![[ELUserManager sharedUserManager]currentCustomer])
     {
         ELCustomer *startingcustomer = [ELCustomer customer];
@@ -346,7 +347,7 @@ typedef enum{
 }
 - (void)handlePaymentError:(NSError *)error{
     [self hideActivityView];
-    self.paymentErrorAlertView = [[UIAlertView alloc]initWithTitle:nil message:nil delegate:self cancelButtonTitle:@"Close" otherButtonTitles:nil];
+    self.paymentErrorAlertView = [[UIAlertView alloc]initWithTitle:nil message:nil delegate:nil cancelButtonTitle:@"Close" otherButtonTitles:nil];
     switch (error.code) {
             
         case elErrorCodeCardDeclinedCVC:

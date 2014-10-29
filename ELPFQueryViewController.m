@@ -1,8 +1,8 @@
 //
-//  ELViewController.m
+//  ELPFQueryViewController.m
 //  Fuel Logic
 //
-//  Created by Mike on 7/9/14.
+//  Created by Mike on 10/27/14.
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
 #define TOP_SPACING 20
@@ -20,16 +20,19 @@
 
 
 
+#import "ELPFQueryViewController.h"
 #import "ELPaymentHeader.h"
-@interface ELViewController ()
+
+@interface ELPFQueryViewController ()
  @property (strong, nonatomic) NSArray *stateArray;
 @end
 
-@implementation ELViewController
+@implementation ELPFQueryViewController
+
 @synthesize activityView = _activityView;
 @synthesize hudProgressView = _hudProgressView;
 @synthesize activityLabel = _activityLabel;
- @synthesize hudProgressHolderView = _hudProgressHolderView;
+@synthesize hudProgressHolderView = _hudProgressHolderView;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -413,105 +416,3 @@
 }
 
 @end
-
-
-#pragma mark ELTextfield implementation
-@implementation ELTextField
--(id)init
-{
-    
-    if (self = [super init]) {
-        self.required = NO;
-        self.requiredLength = 0;
-        self.centerPlaceholder = NO;
-        self.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
-        self.textAlignment = NSTextAlignmentCenter;
-    }
-    return self;
-}
-
-- (id)initWithFrame:(CGRect)frame
-{
-    self = [super initWithFrame:frame];
-    if (self) {
-        self.autocapitalizationType = UITextAutocapitalizationTypeNone;
-        self.autocorrectionType = UITextAutocorrectionTypeNo;
-        self.required = NO;
-        self.requiredLength = 0;
-        self.centerPlaceholder = NO;
-        // Initialization code
-    }
-    return self;
-}
-
-- (CGRect)textRectForBounds:(CGRect)bounds{
-    
-    CGRect rect;
-    
-    if (!self.attributedPlaceholder || !self.attributedPlaceholder.length || !self.centerPlaceholder) rect = CGRectInset(bounds, 8, 8);
-    else
-    {
-        
-
-        CGSize sizeOfPlaceHolder = self.text.length?[self.text sizeWithAttributes:@{NSFontAttributeName:[UIFont fontWithName:MY_FONT_2 size:18],NSForegroundColorAttributeName:ICON_BLUE_SOLID}] :[self.attributedPlaceholder size];
-        
-        
-        if (sizeOfPlaceHolder.width>=bounds.size.width-16)
-            rect = CGRectInset(bounds, 8, 8);
-        
-        else if (self.secureTextEntry)
-            rect = CGRectInset(bounds,
-                               (bounds.size.width - sizeOfPlaceHolder.width)/2-(self.text.length?self.text.length*1.2:.5),
-                               8);
-        
-        else rect = CGRectInset(bounds,
-                           (bounds.size.width - sizeOfPlaceHolder.width)/2-2,
-                           8);
-    }
-    return rect;
-}
-- (CGRect)editingRectForBounds:(CGRect)bounds {
-    
-    CGRect rect;
-    
-    if (!self.text || !self.centerPlaceholder) rect = CGRectInset(bounds, 8, 8);
-    else
-    {
-        
-        
-        CGSize sizeOfPlaceHolder = self.text.length?[self.text sizeWithAttributes:@{NSFontAttributeName:[UIFont fontWithName:MY_FONT_2 size:18],NSForegroundColorAttributeName:ICON_BLUE_SOLID}] :[self.attributedPlaceholder size];
-        
-        
-        if (sizeOfPlaceHolder.width>=bounds.size.width-16)
-            rect = CGRectInset(bounds, 8, 8);
-        
-        else if (self.secureTextEntry)
-            rect = CGRectInset(bounds,
-                               (bounds.size.width - sizeOfPlaceHolder.width)/2-(self.text.length?self.text.length*1.2:.5),
-                               8);
-        
-        else rect = CGRectInset(bounds,
-                                (bounds.size.width - sizeOfPlaceHolder.width)/2-2,
-                                8);
-    }
-    return rect;
-}
-//
-//-(void)drawTextInRect:(CGRect)rect
-//{
-//    [ICON_BLUE_SOLID setFill];
-//    if (self.secureTextEntry) {
-//        [@"*******" drawInRect:rect withAttributes:@{NSFontAttributeName:[UIFont fontWithName:MY_FONT_2 size:17],NSForegroundColorAttributeName:ICON_BLUE_SOLID}];
-//    }
-//    else [self.text drawInRect:rect withAttributes:@{NSFontAttributeName:[UIFont fontWithName:MY_FONT_2 size:17],NSForegroundColorAttributeName:ICON_BLUE_SOLID}];
-//
-//}
-//
-- (void)drawPlaceholderInRect:(CGRect)rect {
-    // Set to any color of your preference
-    // We use self.font.pointSize in order to match the input text's font size
-    
-    [self.placeholder drawInRect:rect withAttributes:@{NSFontAttributeName:[UIFont fontWithName:MY_FONT_1 size:17],NSForegroundColorAttributeName:[UIColor lightGrayColor]}];
-}
-@end
-

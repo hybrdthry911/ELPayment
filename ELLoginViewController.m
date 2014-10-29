@@ -18,6 +18,8 @@
 
 
 #import "ELPaymentHeader.h"
+#import <Security/Security.h>
+#import <LocalAuthentication/LocalAuthentication.h>
 @interface ELLoginViewController ()
  @property (strong, nonatomic) UILabel *titleLabel;
  @property (strong, nonatomic) PFUser *currentUser;
@@ -34,9 +36,10 @@
 @implementation ELLoginViewController
 - (void)viewDidLoad
 {
+    
     [super viewDidLoad];
     
-    if ([PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) [self.navigationController popViewControllerAnimated:YES];
+    if (![PFAnonymousUtils isLinkedWithUser:[PFUser currentUser]]) [self.navigationController popViewControllerAnimated:YES];
     self.currentUser = [[ELUserManager sharedUserManager]currentUser];
     
     self.signUpMode = NO;
@@ -102,7 +105,7 @@
     [self.signUpButton addTarget:self action:@selector(handleSignUpButtonPress:) forControlEvents:UIControlEventTouchUpInside];
     [self.scrollView addSubview:self.signUpButton];
     
-    [self handleSignUpButtonPress:self.signUpButton];
+    if (self.createOnly) [self handleSignUpButtonPress:self.signUpButton];
     // Do any additional setup after loading the view.
 }
 -(IBAction)handleLostButtonPress:(id)sender

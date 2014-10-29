@@ -1,32 +1,21 @@
 //
-//  ELViewController.h
+//  ELPFQueryViewController.h
 //  Fuel Logic
 //
-//  Created by Mike on 7/9/14.
+//  Created by Mike on 10/27/14.
 //  Copyright (c) 2014 Michael Cowley. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
-typedef enum
-{
-    ELViewXOffsetNone, ELViewXOffsetOneHalf, ELViewXOffsetOneQuarter, ELViewXOffsetOneThird, ELViewXOffsetTwoThird, ELViewXOffsetThreeQuarter, ELViewXOffsetOffScreenLeft, ELViewXOffsetOffScreenRight, ELViewXOffsetOneSixth, ELViewXOffsetFiveSixth
-}ELViewXOffset;
+#import <Parse/Parse.h>
 
-typedef enum
-{
-    ELViewWidthFull, ELViewWidthHalf, ELViewWidthQuarter, ELViewWidthThird
-}ELViewWidth;
+@interface ELPFQueryViewController : PFQueryTableViewController
 
-typedef void (^ELCityStateCompletionHandler)(NSString *city, NSString *state, NSError *error);
-
-@class ELTextField;
-@interface ELViewController : UIViewController
- @property (strong, nonatomic) UIView *hudProgressView, *hudProgressHolderView;
- @property (strong, nonatomic) UILabel *activityLabel;
- @property (strong, nonatomic) UIActivityIndicatorView *activityView;
- @property (strong, nonatomic) UITextField *currentTextField, *currentKeyboardTextField;
- @property CGSize lastKeyboardSize;
- @property (strong, nonatomic) UIScrollView *scrollViewToKeyBoardAdjust;
+@property (strong, nonatomic) UIView *hudProgressView, *hudProgressHolderView;
+@property (strong, nonatomic) UILabel *activityLabel;
+@property (strong, nonatomic) UIActivityIndicatorView *activityView;
+@property (strong, nonatomic) UITextField *currentTextField, *currentKeyboardTextField;
+@property CGSize lastKeyboardSize;
+@property (strong, nonatomic) UIScrollView *scrollViewToKeyBoardAdjust;
 -(void)textFieldDidBeginEditing:(UITextField *)textField;
 -(void)textFieldDidEndEditing:(UITextField *)textField;
 -(void)textFieldDidChange:(ELTextField *)textField;
@@ -47,12 +36,3 @@ typedef void (^ELCityStateCompletionHandler)(NSString *city, NSString *state, NS
 -(NSString *)simple:(NSString *)string;
 -(void)showActivityViewWithMessage:(NSString *)message;
 @end
-
-@interface ELTextField : UITextField
-
-@property BOOL required;
-@property int requiredLength;
-@property BOOL isEmailField;
-@property BOOL centerPlaceholder;
-@end
-

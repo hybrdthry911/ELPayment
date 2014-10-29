@@ -10,13 +10,15 @@
 #import <UIKit/UIKit.h>
 #import <AddressBook/AddressBook.h>
 #import "ELStripeHeader.h"
+#import "ELShippingSelectForEditViewController.h"
+#import "ELShippingAddressEditViewController.h"
 #import "ELPaymentBillingViewController.h"
 #import "Stripe+ApplePay.h"
 #import "ELShippingAddress.h"
 #import "ELShippingMethodViewController.h"
 #import "ELShippingSelectViewController.h"
 #import "ELPaymentShippingViewController.h"
-#import "STPTestPaymentAuthorizationViewController.h"
+//#import "STPTestPaymentAuthorizationViewController.h"
 #import "ELView.h"
 #import "ELViewController.h"
 #import "ELShipment.h"

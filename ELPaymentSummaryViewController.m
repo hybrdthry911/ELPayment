@@ -288,7 +288,7 @@ typedef enum{
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if (indexPath.section == elOrderSummaryIndexPay) {
-        [self showActivityView];
+        [self showActivityViewWithMessage:@"Processing Payment"];
         if (![[ELUserManager sharedUserManager]currentCustomer]) {
             [self chargeNewCustomer];
         }

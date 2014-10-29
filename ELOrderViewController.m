@@ -336,17 +336,22 @@
     if (indexPath.section == 1)
     {
         ;
-        if (![PFAnonymousUtils isLinkedWithUser:[[ELUserManager sharedUserManager]currentUser]] && ![[[ELUserManager sharedUserManager]currentUser][@"emailVerified"] boolValue]) {
-            [[[ELUserManager sharedUserManager]currentUser] fetchInBackgroundWithBlock:^(PFObject *object, NSError *error) {
-                
+        if (![PFAnonymousUtils isLinkedWithUser:[[ELUserManager sharedUserManager]currentUser]]) {
+            [[ELUserManager sharedUserManager]checkForSessionActiveThen:^(BOOL verified, NSError *error) {
+                if (verified) {
+                    ELPaymentSelectViewController *vc = [ELPaymentSelectViewController new];
+                    vc.order = self.order;
+                    [self.navigationController pushViewController:vc animated:YES];
+                }
             }];
-            self.verifyEmailAlertView = [[UIAlertView alloc]initWithTitle:@"Error" message:@"You haven't verified your email address associated with your account." delegate:self cancelButtonTitle:@"Close" otherButtonTitles:@"Resend",nil];
-            [self.verifyEmailAlertView show];
-            return;
+        
         }
-        ELPaymentSelectViewController *vc = [ELPaymentSelectViewController new];
-        vc.order = self.order;
-        [self.navigationController pushViewController:vc animated:YES];
+        else
+        {
+            ELPaymentSelectViewController *vc = [ELPaymentSelectViewController new];
+            vc.order = self.order;
+            [self.navigationController pushViewController:vc animated:YES];
+        }
         return;
     }
     if (indexPath.row == self.currentSelectedTableViewCellRow) self.currentSelectedTableViewCellRow = -1;

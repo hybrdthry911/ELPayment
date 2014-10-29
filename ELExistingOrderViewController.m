@@ -23,13 +23,9 @@
     self.view.backgroundColor = [[UIColor whiteColor]colorWithAlphaComponent:.95];
     self.tableView.separatorColor = [UIColor clearColor];
     if (!self.lineItems) [self showActivityView];
-        [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(userLoggedIn:) name:elNotificationLoginSucceeded object:nil];
-    if (self.popToRootWhenBackButtonPressed && [PFAnonymousUtils isLinkedWithUser:[[ELUserManager sharedUserManager]currentUser]]) {
-        self.loginButton = [[UIBarButtonItem alloc]initWithTitle:@"Create Account" style:UIBarButtonItemStyleDone target:self action:@selector(handleLoginButtonPress:)];
-        self.navigationItem.rightBarButtonItem = self.loginButton;
-    }
+    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(userLoggedIn:) name:elNotificationLoginSucceeded object:nil];
 }
--(IBAction)handleLoginButtonPress:(id)sender
+-(void)handleLogin
 {
     ELLoginViewController *vc = [ELLoginViewController new];
     vc.createOnly = YES;
@@ -94,6 +90,7 @@
         case elExistingOrderIndexTracking:
         case elExistingOrderIndexShippingInformation:
         case elExistingOrderIndexBillingInformation:
+        case elExistingOrderIndexLogin:
             return 20;
             break;
         default:
@@ -126,7 +123,11 @@
         label.text = @"Billing Information:";
         return label;
     }
-    
+    if (section == elExistingOrderIndexLogin) {
+        UIView *view = [[UIView alloc]initWithFrame:CGRectMake(0, 0, tableView.bounds.size.width, 15)];
+        view.backgroundColor = [UIColor clearColor];
+        return view;
+    }
     if (section != elExistingOrderIndexLineItems) return nil;
     
     UIView *view = [[UIView alloc]initWithFrame:CGRectMake(0, 0, tableView.bounds.size.width, 25)];
@@ -172,6 +173,7 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     // Return the number of rows in the section.
     switch (section) {
+        case elExistingOrderIndexLogin: return (self.popToRootWhenBackButtonPressed && [PFAnonymousUtils isLinkedWithUser:[[ELUserManager sharedUserManager]currentUser]]);
         case elExistingOrderIndexLineItems:
             return self.lineItems.count;
             break;
@@ -212,6 +214,7 @@
                     constrainedToSize:CGSizeMake(self.tableView.bounds.size.width/2-10, 500)].height+10;
         }
             break;
+        case elExistingOrderIndexLogin: return 60;
         case elExistingOrderIndexStatus:
         case elExistingOrderIndexCC:
             return 40;
@@ -232,6 +235,7 @@
             if (!cell) {
                 cell = [[ELPumpTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:createdCellIdentifier];
                 [cell shine];
+                cell.backgroundColor = [UIColor clearColor];
             }
             NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
             [dateFormat setDateStyle:NSDateFormatterLongStyle]; // day, Full month and year
@@ -247,6 +251,7 @@
             cell = [tableView dequeueReusableCellWithIdentifier:statusCellIdentifier];
             if (!cell) {
                 cell = [[ELPumpTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:statusCellIdentifier];
+                cell.backgroundColor = [UIColor clearColor];
                 [cell shine];
             }
             cell.textLabel.text = [NSString stringWithFormat:@"Status:%@",self.order.status];
@@ -260,6 +265,7 @@
             ELExistingLineItemTableViewCell *lineItemCell = [tableView dequeueReusableCellWithIdentifier:lineItemIdentifier];
             if (!lineItemCell) {
                 lineItemCell = [[ELExistingLineItemTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:lineItemIdentifier];
+                lineItemCell.backgroundColor = [UIColor clearColor];
             }
             lineItemCell.lineItem = self.lineItems[indexPath.row];
             lineItemCell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
@@ -272,6 +278,7 @@
             ELAmountTableViewCell *amountCell = [tableView dequeueReusableCellWithIdentifier:subtotalIdentifier];
             if (!amountCell) {
                 amountCell = [[ELAmountTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:subtotalIdentifier];
+                amountCell.backgroundColor = [UIColor clearColor];
             }
             amountCell.amountTypeLabel.text = @"Subtotal:";
             amountCell.amountLabel.text = [NSString stringWithFormat:@"$%.2f",self.order.subTotal.floatValue];
@@ -285,6 +292,7 @@
             ELAmountTableViewCell *amountCell = [tableView dequeueReusableCellWithIdentifier:shippingIdentifier];
             if (!amountCell) {
                 amountCell = [[ELAmountTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:shippingIdentifier];
+                amountCell.backgroundColor = [UIColor clearColor];
             }
             amountCell.amountTypeLabel.text = @"Shipping:";
             amountCell.amountLabel.text = [NSString stringWithFormat:@"$%.2f",self.order.shipping.floatValue];
@@ -298,6 +306,7 @@
             ELAmountTableViewCell *amountCell = [tableView dequeueReusableCellWithIdentifier:taxIdentifier];
             if (!amountCell) {
                 amountCell = [[ELAmountTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:taxIdentifier];
+                amountCell.backgroundColor = [UIColor clearColor];
             }
             amountCell.amountTypeLabel.text = @"Tax:";
             amountCell.amountLabel.text = [NSString stringWithFormat:@"$%.2f",self.order.tax?self.order.tax.floatValue:0.0];
@@ -310,6 +319,7 @@
             ELAmountTableViewCell *amountCell = [tableView dequeueReusableCellWithIdentifier:totalIdentifier];
             if (!amountCell) {
                 amountCell = [[ELAmountTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:totalIdentifier];
+                amountCell.backgroundColor = [UIColor clearColor];
             }
             amountCell.amountTypeLabel.text = @"Total:";
             amountCell.amountLabel.text = [NSString stringWithFormat:@"$%.2f",self.order.total.floatValue];
@@ -322,6 +332,7 @@
             ELAmountTableViewCell *amountCell = [tableView dequeueReusableCellWithIdentifier:refundedIdentifier];
             if (!amountCell) {
                 amountCell = [[ELAmountTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:refundedIdentifier];
+                amountCell.backgroundColor = [UIColor clearColor];
             }
             amountCell.amountTypeLabel.text = @"Refunded:";
             amountCell.amountLabel.text = [NSString stringWithFormat:@"$%.2f",self.order.amountRefunded.floatValue];
@@ -334,6 +345,7 @@
             ELAmountTableViewCell *amountCell = [tableView dequeueReusableCellWithIdentifier:ccIdentifier];
             if (!amountCell) {
                 amountCell = [[ELAmountTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:ccIdentifier];
+                amountCell.backgroundColor = [UIColor clearColor];
             }
             amountCell.amountTypeLabel.text = [NSString stringWithFormat:@"%@ Ending In:",self.order.card.brand];
             amountCell.amountLabel.text = [NSString stringWithFormat:@"%@",self.order.card.dynamicLast4?self.order.card.dynamicLast4:self.order.card.last4];
@@ -347,6 +359,7 @@
             cell = [tableView dequeueReusableCellWithIdentifier:trackingIdentifier];
             if (!cell) {
                 cell = [[ELPumpTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:trackingIdentifier];
+                cell.backgroundColor = [UIColor clearColor];
             }
             cell.textLabel.text = self.order.trackingNumber?[NSString stringWithFormat:@"%@:%@ ",self.order.shippingCarrier, self.order.trackingNumber]:@"No Tracking Information";
             cell.accessoryType = self.order.trackingNumber?UITableViewCellAccessoryDisclosureIndicator:UITableViewCellAccessoryNone;
@@ -365,6 +378,7 @@
                 cell.textLabel.font =[UIFont fontWithName:MY_FONT_1 size:15];
                 cell.textLabel.textAlignment = NSTextAlignmentLeft;
                 cell.textLabel.numberOfLines = 0;
+                cell.backgroundColor = [UIColor clearColor];
             }
             cell.textLabel.text = [NSString stringWithFormat:@"%@",self.order.shippingInformation];
         }
@@ -381,17 +395,35 @@
                 cell.textLabel.font =[UIFont fontWithName:MY_FONT_1 size:15];
                 cell.textLabel.textAlignment = NSTextAlignmentLeft;
                 cell.textLabel.numberOfLines = 0;
+                cell.backgroundColor = [UIColor clearColor];
             }
             cell.textLabel.text = [NSString stringWithFormat:@"%@",self.order.billingInformation];
         }
             break;
+        case elExistingOrderIndexLogin:
+        {
+            static NSString *LoginIdentifier = @"LoginCell";
+            cell = [tableView dequeueReusableCellWithIdentifier:LoginIdentifier];
+            if (!cell)
+            {
+                cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:LoginIdentifier];
+                cell.textLabel.textColor = [UIColor whiteColor];
+                cell.backgroundColor = ICON_BLUE_SOLID;
+                cell.textLabel.adjustsFontSizeToFitWidth = YES;
+                cell.textLabel.numberOfLines = 1;
+                cell.textLabel.font =[UIFont fontWithName:MY_FONT_1 size:18];
+                cell.textLabel.textAlignment = NSTextAlignmentCenter;
+                cell.textLabel.numberOfLines = 0;
+            }
+            cell.textLabel.text = @"Create account and track your order status";
+        }
+            break;
+            
         default:
             return nil;
             break;
     }
-    
-    
-    cell.backgroundColor = [UIColor clearColor];
+
     
     return cell;
 }
@@ -425,6 +457,8 @@
                 }
             }
         }
+            case elExistingOrderIndexLogin:
+            [self handleLogin];
         default:
             break;
     }

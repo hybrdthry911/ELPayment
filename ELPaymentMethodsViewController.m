@@ -144,20 +144,11 @@
     if (indexPath.row>[[ELUserManager sharedUserManager]currentCustomer].cards.count)
     {
         [self showActivityView];
-        if ([[ELUserManager sharedUserManager]passwordSessionActive])
-        {
-            [self presentApplePayAuthorization];
-        }
-        else
-        {
-            [[ELUserManager sharedUserManager]verifyPasswordWithComletion:^(BOOL verified, NSError *error) {
-                if (verified)
-                {
-                    [self presentApplePayAuthorization];
-                }
-                else [self hideActivityView];
-            }];
-        }
+        [[ELUserManager sharedUserManager]checkForSessionActiveThen:^(BOOL verified, NSError *error) {
+            if (verified) [self presentApplePayAuthorization];
+            else [self hideActivityView];
+            
+        }];
         return;
     }
     ELCard *card;

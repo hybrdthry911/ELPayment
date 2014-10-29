@@ -18,6 +18,6 @@
 -(void)autoCloseAlertView:(UIAlertView*)alert;
 -(void)showActivityView;
 -(void)hideActivityView;
-
+-(void)showActivityViewWithMessage:(NSString *)message;
 + (UIViewController*) topMostController;
 @end

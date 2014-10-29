@@ -85,7 +85,6 @@
     else [self hideSaveButton];
 }
 -(BOOL)validForSave{
-    NSLog(@"simple:%@",[self simple:self.phoneNumberTextField.text]);
     NSCharacterSet *numericOnly = [NSCharacterSet decimalDigitCharacterSet];
     NSCharacterSet *myStringSet = [NSCharacterSet characterSetWithCharactersInString:[self simple:self.phoneNumberTextField.text]];
     return ([self validateEmail:[self.emailTextField.text lowercaseString]] && [self simple:self.phoneNumberTextField.text].length >= 10 && [numericOnly isSupersetOfSet: myStringSet]);
@@ -101,7 +100,8 @@
     ELChangePasswordViewController *vc = [[ELChangePasswordViewController alloc]init];
     [self.navigationController pushViewController:vc animated:YES];
 }
--(IBAction)saveButtonPressed:(id)sender{
+-(IBAction)saveButtonPressed:(id)sender
+{
     if (![self validForSave]) return;
     
     [[ELUserManager sharedUserManager]verifyPasswordWithComletion:^(BOOL verified, NSError *error) {

@@ -7,10 +7,11 @@
 //
 
 #import <Parse/Parse.h>
+#import "ELPFQueryViewController.h"
 @class ELOrder;
 @class STPToken;
 @class ELCard;
-@interface ELShippingSelectViewController : PFQueryTableViewController
+@interface ELShippingSelectViewController : ELPFQueryViewController
  @property (strong, nonatomic) ELOrder *order;
  @property (strong, nonatomic) STPToken *token;
  @property (strong, nonatomic) ELCard *card;

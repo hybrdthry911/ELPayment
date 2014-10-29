@@ -18,6 +18,7 @@
  @property (strong, nonatomic) PFUser *currentUser;
  @property BOOL shippingCalcInProgress;
  @property (strong, nonatomic) NSString *originZipCode;
+ @property (strong, nonatomic) NSString *zipCodeInProgress;
 @end
 
 @implementation ELOrder
@@ -113,6 +114,7 @@
     message.fromZip = self.originZipCode;
     message.weight = self.weight;
     message.toZip = self.zipCode?self.zipCode:self.card.addressZip;
+    self.zipCodeInProgress = self.zipCode.copy;
     [ELShipment ratesInBackground:message completionHandler:^(RateResult *result, NSError *error)
      {
         if (!error) {
@@ -138,7 +140,11 @@
                 self.shippingCarrier = [rate.carrier uppercaseString];
                 self.shippingCalcInProgress = NO;
                 [[NSNotificationCenter defaultCenter]postNotificationName:@"shippingCalculated" object:self];
-                handler(self.orderStatus,error);
+                if (![self.zipCode isEqualToString:self.zipCodeInProgress])
+                {
+                    [self calculateShippingAsync:handler];
+                }
+                else handler(self.orderStatus,error);
             }
             else handler(self.orderStatus, errorFromELErrorType(elErrorCodeNoShipping));
         }

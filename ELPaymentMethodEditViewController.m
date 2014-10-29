@@ -296,6 +296,93 @@
 
 
 #pragma mark Action Methods
+- (IBAction)saveButtonPressed:(UIBarButtonItem *)sender{
+    [self showActivityView];
+    [self hideExpPickerView];
+    [self hideStatePickerView];
+    
+    if (!self.card
+        && self.validCC
+        && self.nameTextField.text.length
+        && self.addressCityTextField.text.length
+        && self.addressLine1TextField.text.length
+        && self.addressZipCodeTextField.text.length == 5)
+    {
+        ELCard *card = [[ELCard alloc]init];
+        card.name = self.nameTextField.text;
+        card.addressCity = self.addressCityTextField.text;
+        card.addressLine1 = self.addressLine1TextField.text;
+        card.addressLine2 = self.addressLine2TextField.text;
+        card.addressState = self.stateString;
+        card.addressZip = self.addressZipCodeTextField.text;
+        card.number = self.stripeView.cardNumber.formattedString;
+        card.expMonth = self.stripeView.cardExpiry.month;
+        card.expYear = self.stripeView.cardExpiry.year;
+        card.cvc = self.stripeView.cardCVC.string;
+        card.addressCountry = @"US";
+        [ELStripe createTokenWithCard:card completion:^(STPToken *token, NSError *error) {
+            if (!error) {
+                [ELCustomer addCard:token toCustomer:[[ELUserManager sharedUserManager]currentCustomer] completion:^(ELCard *card, NSError *error) {
+                    if (!error) {
+                        self.card = card;
+                    }
+                    [[ELUserManager sharedUserManager]fetchCustomer];
+                }];
+            }
+            else
+            {
+                UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:@"Invalid Credit Card Information" delegate:nil cancelButtonTitle:nil otherButtonTitles:nil];
+                [myAlert show];
+                [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:2];
+                [[ELUserManager sharedUserManager]fetchCustomer];
+            }
+        }];
+    }
+    else if(!self.card && !self.validCC)
+    {
+        UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:@"Invalid Credit Card Information" delegate:nil cancelButtonTitle:nil otherButtonTitles:nil];
+        [myAlert show];
+        [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:2];
+        [[ELUserManager sharedUserManager]fetchCustomer];
+    }
+    else if (self.card.identifier)
+    {
+        ELCard *card = self.card;
+        card.name = self.nameTextField.text;
+        card.addressCity = self.addressCityTextField.text;
+        card.addressLine1 = self.addressLine1TextField.text;
+        card.addressLine2 = self.addressLine2TextField.text;
+        card.addressState = self.stateString;
+        card.addressZip = self.addressZipCodeTextField.text;
+        card.identifier = self.card.identifier;
+        card.addressCountry = self.card.addressCountry;
+        card.expMonth = self.card.expMonth;
+        card.expYear = self.card.expYear;
+        [ELCard updateCard:card customerId:[[ELUserManager sharedUserManager]currentCustomer].identifier completionHandler:^(ELCard *card, NSError *error) {
+            if (!error && card)
+            {
+                self.card = card;
+                UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Success" message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
+                [myAlert show];
+                [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:1];
+            }
+            else{
+                UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:@"Invalid Credit Card Information" delegate:nil cancelButtonTitle:nil otherButtonTitles:nil];
+                [myAlert show];
+                [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:2];
+                [[ELUserManager sharedUserManager]fetchCustomer];
+            }
+            [[ELUserManager sharedUserManager]fetchCustomer];
+        }];
+    }
+    else{
+        UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:@"Invalid Credit Card Information" delegate:nil cancelButtonTitle:nil otherButtonTitles:nil];
+        [myAlert show];
+        [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:2];
+        [[ELUserManager sharedUserManager]fetchCustomer];
+    }
+    
+}
 - (IBAction)handleViewTap:(id)sender{
     [super handleViewTap:sender];
     [self hideExpPickerView];
@@ -334,87 +421,6 @@
 - (void)deleteCard{
     UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Are you sure?" message:nil delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:@"Delete",nil];
     [myAlert show];
-}
-
-- (IBAction)saveButtonPressed:(UIBarButtonItem *)sender{
-    [self showActivityView];
-    [self hideExpPickerView];
-    [self hideStatePickerView];
-    ELCard *card = [[ELCard alloc]init];
-    card.name = self.nameTextField.text;
-    card.addressCity = self.addressCityTextField.text;
-    card.addressLine1 = self.addressLine1TextField.text;
-    card.addressLine2 = self.addressLine2TextField.text;
-    card.addressState = self.stateString;
-    card.addressZip = self.addressZipCodeTextField.text;
-    if (!self.card
-        && self.validCC
-        && self.nameTextField.text.length
-        && self.addressCityTextField.text.length
-        && self.addressLine1TextField.text.length
-        && self.addressZipCodeTextField.text.length == 5)
-    {
-        
-        card.number = self.stripeView.cardNumber.formattedString;
-        card.expMonth = self.stripeView.cardExpiry.month;
-        card.expYear = self.stripeView.cardExpiry.year;
-        card.cvc = self.stripeView.cardCVC.string;
-        card.addressCountry = @"US";
-        [ELStripe createTokenWithCard:card completion:^(STPToken *token, NSError *error) {
-            if (!error) {
-                [ELCustomer addCard:token toCustomer:[[ELUserManager sharedUserManager]currentCustomer] completion:^(ELCard *card, NSError *error) {
-                    if (!error) {
-                        self.card = card;
-                    }
-                    [[ELUserManager sharedUserManager]fetchCustomer];
-                }];
-            }
-            else
-            {
-                UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:@"Invalid Credit Card Information" delegate:nil cancelButtonTitle:nil otherButtonTitles:nil];
-                [myAlert show];
-                [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:2];
-                [[ELUserManager sharedUserManager]fetchCustomer];
-            }
-        }];
-    }
-    else if(!self.card && !self.validCC)
-    {
-        UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:@"Invalid Credit Card Information" delegate:nil cancelButtonTitle:nil otherButtonTitles:nil];
-        [myAlert show];
-        [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:2];
-        [[ELUserManager sharedUserManager]fetchCustomer];
-    }
-    else if (self.card.identifier)
-    {
-        card.identifier = self.card.identifier;
-        card.addressCountry = self.card.addressCountry;
-        card.expMonth = self.card.expMonth;
-        card.expYear = self.card.expYear;
-        [ELCard updateCard:card customerId:[[ELUserManager sharedUserManager]currentCustomer].identifier completionHandler:^(ELCard *card, NSError *error) {
-            if (!error && card)
-            {
-                self.card = card;
-                UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Success" message:nil delegate:self cancelButtonTitle:nil otherButtonTitles:nil];
-                [myAlert show];
-                [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:1];
-            }
-            else{
-                UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:@"Invalid Credit Card Information" delegate:nil cancelButtonTitle:nil otherButtonTitles:nil];
-                [myAlert show];
-                [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:2];
-                [[ELUserManager sharedUserManager]fetchCustomer];
-            }
-            [[ELUserManager sharedUserManager]fetchCustomer];
-        }];
-    }
-    else{
-        UIAlertView *myAlert = [[UIAlertView alloc]initWithTitle:@"Error" message:@"Invalid Credit Card Information" delegate:nil cancelButtonTitle:nil otherButtonTitles:nil];
-        [myAlert show];
-        [self performSelector:@selector(autoCloseAlertView:) withObject:myAlert afterDelay:2];
-        [[ELUserManager sharedUserManager]fetchCustomer];
-    }
-    
 }
 
 #pragma mark PTKView Delegate
